@@ -13,8 +13,8 @@
 #include <unordered_map>
 #include <algorithm>
 #include <unordered_set>
- #include <sys/types.h>
- #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 
@@ -25,7 +25,7 @@ using query_output=vector<pair<gid, uint32_t>>;
 
 
 
-class Index{
+class Index {
 public:
     //CONSTANTS
     uint32_t K;//kmer size
@@ -46,7 +46,7 @@ public:
 
 
 
-    Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4){
+    Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
         lF=ilF;
         K=iK;
         W=iW;
@@ -60,19 +60,19 @@ public:
         mask_fingerprint=((uint64_t)1<<(64-lF))-1;
         Buckets=new vector<gid>[fingerprint_range*F];
         offsetUpdatekmer=1;
-	    offsetUpdatekmer<<=2*K;
+	offsetUpdatekmer<<=2*K;
     }
 
 
 
-    ~Index(){
+    ~Index() {
         delete[] Buckets;
     }
 
 
 
 
-    uint64_t nuc2int(char c)const{
+    uint64_t nuc2int(char c)const {
         switch(c){
             case 'C': return 1;
             case 'G': return 2;
@@ -85,7 +85,7 @@ public:
 
 
 
-    string kmer2str(uint64_t num,uint k)const{
+    string kmer2str(uint64_t num,uint k)const {
         string res;
         uint64_t anc(1);
         anc<<=(2*(k-1));
@@ -116,7 +116,7 @@ public:
 
 
 
-    uint64_t asm_log2(const uint64_t x) const{
+    uint64_t asm_log2(const uint64_t x) const {
         uint64_t y;
         asm ( "\tbsr %1, %0\n"
             : "=r"(y)
@@ -126,21 +126,8 @@ public:
     }
 
 
-    uint64_t mylog2 (uint64_t val) const{
-        if (val == 0) return 0;
-        if (val == 1) return 0;
-        uint64_t ret = 0;
-        while (val > 1) {
-            val >>= 1;
-            ret++;
-        }
-        return ret;
-    }
-
-
-
-    uint64_t nuc2intrc(char c)const{
-        switch(c){
+    uint64_t nuc2intrc(char c)const {
+        switch(c) {
             /*
             case 'a': return 0;
             case 'c': return 1;
@@ -162,7 +149,7 @@ public:
 
 
 
-    void update_kmer(kmer& min, char nuc)const{
+    void update_kmer(kmer& min, char nuc)const {
         min<<=2;
         min+=nuc2int(nuc);
         min%=offsetUpdatekmer;
@@ -170,14 +157,14 @@ public:
 
 
 
-    void update_kmer_RC(kmer& min, char nuc)const{
+    void update_kmer_RC(kmer& min, char nuc)const {
         min>>=2;
         min+=(nuc2intrc(nuc)<<(2*K-2));
     }
 
 
 
-    kmer rcb(kmer min)const{
+    kmer rcb(kmer min)const {
         kmer res(0);
         kmer offset(1);
         offset<<=(2*K-2);
@@ -190,7 +177,7 @@ public:
     }
 
 
-    void print_bin(uint64_t n,uint bits_to_print=64)const{
+    void print_bin(uint64_t n,uint bits_to_print=64)const {
         uint64_t mask=1;
         mask<<=bits_to_print-1;
         for(uint i(0);i<bits_to_print;++i){
@@ -203,9 +190,9 @@ public:
 
 
 
-    kmer str2numstrand(const string& str)const{
+    kmer str2numstrand(const string& str)const {
         uint64_t res(0);
-        for(uint i(0);i<str.size();i++){
+        for(uint i(0);i<str.size();i++) {
             res<<=2;
             switch (str[i]){
                 case 'A':res+=0;break;
@@ -225,7 +212,7 @@ public:
 
 
 
-    uint32_t get_fingerprint(uint64_t hashed)const{
+    uint32_t get_fingerprint(uint64_t hashed)const {
         // cout<<"get_fingerprint"<<endl;
         // cout<<hashed<<endl;
         // print_bin(hashed,64-lF);
@@ -242,10 +229,10 @@ public:
         // cout<<ll<<endl;
         // print_bin(result,8);
         result+=remaining_nonzero<<M;// we concatenant the hyperloglog part with the minhash part
-        //   cout<<"get_fingerprintOUT"<<endl;
+        // cout<<"get_fingerprintOUT"<<endl;
         // cout<<remaining_nonzero<<endl;
-        //  print_bin(result,8);
-        //  cin.get();
+        // print_bin(result,8);
+        // cin.get();
         return result;
     }
 
@@ -260,24 +247,24 @@ public:
 
 
 
-    void compute_sketch(const string& reference, vector<int32_t>& sketch)const{
-        if(sketch.size()!=F){
+    void compute_sketch(const string& reference, vector<int32_t>& sketch) const {
+        if(sketch.size()!=F) {
             sketch.resize(F,-1);
         }
-        kmer S_kmer(str2numstrand(reference.substr(0,K-1)));
-	    kmer RC_kmer(rcb(S_kmer));
-        for(uint i(0);i+K<reference.size();++i){
+        kmer S_kmer(str2numstrand(reference.substr(0,K-1)));//get the first kmer (k-1 bases)
+	    kmer RC_kmer(rcb(S_kmer));//The reverse complement
+        for(uint i(0);i+K<reference.size();++i) {// all kmer in the genome
             update_kmer(S_kmer,reference[i+K-1]);
             update_kmer_RC(RC_kmer,reference[i+K-1]);
-            kmer canon(min(S_kmer,RC_kmer));
+            kmer canon(min(S_kmer,RC_kmer));//Kmer min, the one selected
             uint64_t hashed=revhash64(canon);
-            uint32_t bucket_id(hashed>>(64-lF));
+            uint32_t bucket_id(hashed>>(64-lF));//Which Bucket 
             // print_bin(hashed);
             hashed&=mask_fingerprint;
             // print_bin(hashed);
             // print_bin(sketch[bucket_id]);
             hashed=get_fingerprint(hashed);
-            if(sketch[bucket_id]>hashed){
+            if(sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
                 sketch[bucket_id]=hashed;
             }
         }
@@ -288,12 +275,12 @@ public:
     //HERE we only select the minimal hashes without computing the HMH fingerprint
      void compute_sketch_kmer(const string& reference, vector<uint64_t>& sketch)const{
         // cout<<"compute_sketch_kmer"<<endl;
-        if(sketch.size()!=F){
+        if(sketch.size()!=F) {
             sketch.resize(F,-1);
         }
         kmer S_kmer(str2numstrand(reference.substr(0,K-1)));
 	    kmer RC_kmer(rcb(S_kmer));
-        for(uint i(0);i+K<reference.size();++i){
+        for(uint i(0);i+K<reference.size();++i) {
             update_kmer(S_kmer,reference[i+K-1]);
             update_kmer_RC(RC_kmer,reference[i+K-1]);
             kmer canon(min(S_kmer,RC_kmer));
@@ -301,7 +288,7 @@ public:
             uint32_t bucket_id(hashed>>(64-lF));
             hashed&=mask_fingerprint;
             // cout<<bucket;_id<<" "<<sketch.size()<<endl;
-            if(sketch[bucket_id]>hashed){
+            if(sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
                 sketch[bucket_id]=hashed;
             }
         }
@@ -310,28 +297,28 @@ public:
 
 
 
-    void insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id){
-        for(uint i(0);i<F;++i){
-            if(sketch[i]<fingerprint_range and sketch[i]>=0){
+    void insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id) {
+        for(uint i(0);i<F;++i) {
+            if(sketch[i]<fingerprint_range and sketch[i]>=0) {
                 Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
             }
         }
     }
 
 
-
-    query_output query_sketch(const vector<int32_t>& sketch,uint32_t min_score=1)const {
+//TODO Optmiser : compter les genomes id
+    query_output query_sketch(const vector<int32_t>& sketch,uint32_t min_score=1) const {
         query_output result;
         unordered_map<gid,uint32_t> counts;
-        for(uint i(0);i<F;++i){
-            if(sketch[i]<fingerprint_range and sketch[i]>0){
-                for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+        for(uint i(0);i<F;++i) {
+            if(sketch[i]<fingerprint_range and sketch[i]>0) {
+                for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j) {
                     counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                 }
             }
         }
         for(auto it=counts.begin();it!=counts.end();it++) {
-            if(it->second>=min_score){
+            if(it->second>=min_score) {
                 result.push_back({it->second,it->first});
             }
         }
@@ -355,7 +342,7 @@ public:
 
 
 
-    void insert_sequence(const string& str,uint32_t genome_id){
+    void insert_sequence(const string& str,uint32_t genome_id) {
         vector<int32_t> sketch;
         compute_sketch(str,sketch);
         insert_sketch(sketch,genome_id);
@@ -365,15 +352,15 @@ public:
 
     //all the lines from the file is considered as a separate entry with a different identifier
     //TODO HANDLE FASTQ multiFASTA
-    void insert_file_lines(const string& filestr){
+    void insert_file_lines(const string& filestr) {
         ifstream in(filestr);
         string ref,head;
-        while(not in.eof()){
+        while(not in.eof()) {
 			{
 				getline(in,head);
 				getline(in,ref);
 			}
-            if(ref.size()>K){
+            if(ref.size()>K) {
                 insert_sequence(ref,genome_numbers);
                 genome_numbers++;
             }
@@ -384,19 +371,19 @@ public:
 
 
 
-    void query_file_lines(const string& filestr){
+    void query_file_lines(const string& filestr) {
         ifstream in(filestr);
         string ref,head;
-        while(not in.eof()){
+        while(not in.eof()) {
             {
                 getline(in,head);
                 getline(in,ref);
             }
-            if(ref.size()>K){
+            if(ref.size()>K) {
                 auto out(query_sequence(ref));
                 ref.clear();
                 cout<<"out: "<<endl;
-                for(uint32_t i=0;i<min((uint)5,(uint)out.size());i++){
+                for(uint32_t i=0;i<min((uint)5,(uint)out.size());i++) {
                     cout<<out[i].second<<" "<<out[i].first<<endl;
                 }
             }
@@ -406,8 +393,8 @@ public:
 
 
         
-    void merge_sketch( vector<int32_t>& sketch1,const vector<int32_t>& sketch2){
-        for(uint i(0);i<sketch1.size();++i){
+    void merge_sketch( vector<int32_t>& sketch1,const vector<int32_t>& sketch2) {
+        for(uint i(0);i<sketch1.size();++i) {
             sketch1[i]=min(sketch1[i],sketch2[i]);
         }
     }
@@ -422,27 +409,26 @@ inline bool exists_test (const std::string& name) {
 
 
 //HERE all the kmer of the file are put in a single sketch and inserted
-    void insert_file_whole(const string& filestr){
+    void insert_file_whole(const string& filestr) {
         ifstream in(filestr);
         string ref,head;
         vector<uint64_t> kmer_sketch;
         vector<int32_t> sketch(F,-1);
-        while(not in.eof()){
+        while(not in.eof()) {
 			{
 				getline(in,head);
 				getline(in,ref);
 			}
-            if(ref.size()>K){
+            if(ref.size()>K) {
                 compute_sketch_kmer(ref,kmer_sketch);
             }
             ref.clear();
         }   
         // cout<<"get fingerprint"<<endl;
-        for(uint i(0);i<F;++i){
+        for(uint i(0);i<F;++i) {
             sketch[i]=get_fingerprint(kmer_sketch[i]);
         }
         // cout<<"get fingerprintOK"<<endl;
-
         insert_sketch(sketch,genome_numbers);;
         genome_numbers++;
     }
@@ -450,13 +436,13 @@ inline bool exists_test (const std::string& name) {
 
 
 //HERE all the files of the fof are inserted as a separate entry in the index
-    void insert_file_of_file_whole(const string& filestr){
+    void insert_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
         string ref;
 
-        while(not in.eof()){
+        while(not in.eof()) {
 			getline(in,ref);
-            if(exists_test(ref)){
+            if(exists_test(ref)) {
                 insert_file_whole(ref);
             }
         }
@@ -465,7 +451,7 @@ inline bool exists_test (const std::string& name) {
 
 
     //HERE all the kmer of the file are put in a single sketch and Queried
-    void query_file_whole(const string& filestr){
+    void query_file_whole(const string& filestr) {
         ifstream in(filestr);
         string ref,head;
         vector<uint64_t> kmer_sketch;
@@ -480,7 +466,7 @@ inline bool exists_test (const std::string& name) {
             }
           
         }   
-        for(uint i(0);i<F;++i){
+        for(uint i(0);i<F;++i) {
             // cout<<i<<" "<<sketch.size()<<endl;
             sketch[i]=get_fingerprint(kmer_sketch[i]);
         }
@@ -491,7 +477,7 @@ inline bool exists_test (const std::string& name) {
 
 
 
-    void query_file_of_file_whole(const string& filestr){
+    void query_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
         string ref;
 
@@ -506,7 +492,6 @@ inline bool exists_test (const std::string& name) {
 
 
 };
-
 
 
 
