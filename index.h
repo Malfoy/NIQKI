@@ -486,7 +486,7 @@ inline bool exists_test (const std::string& name) {
         }
         // cout<<"la fingernbtoint"<<endl;
         auto out(query_sketch(sketch,10000));
-        cout<<out.size()<<endl;
+        // cout<<out.size()<<endl;
     }
 
 
