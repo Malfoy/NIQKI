@@ -1,3 +1,5 @@
+#include "nihm_index.h"
+
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
@@ -17,7 +19,6 @@
 
 
 
-
 using namespace std;
 using namespace chrono;
 
@@ -28,12 +29,12 @@ int main(int argc, char ** argv){
     time_point<system_clock> start, endindex,end;
   
     start = std::chrono::system_clock::now();
-    monidex.insert_file_of_file_whole("fof100.txt");
+    monidex.insert_file_of_file_whole("/home/bilbok/Documents/NiHM/Tools/dashing/fof.txt");
     endindex = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = endindex - start;
   
     std::cout << "Indexing lasted " << elapsed_seconds.count() << "s\n";
-    monidex.query_file_of_file_whole("fof100.txt");
+    monidex.query_file_of_file_whole("/home/bilbok/Documents/NiHM/Tools/dashing/fof.txt");
     end = std::chrono::system_clock::now();
     elapsed_seconds =end-  endindex;
     cout << "Query lasted " << elapsed_seconds.count() << "s\n";
