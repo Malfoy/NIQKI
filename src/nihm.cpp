@@ -56,7 +56,7 @@ enum  optionIndex {
   QUERY_FILE,
   OUTPUT,
   LOGO_OPT,
-  HELP,
+  HELP
 };
 
 
@@ -64,7 +64,7 @@ enum  optionIndex {
 const option::Descriptor usage[] = {
   {UNKNOWN, 0,"" , ""    , Arg::Unknown,
     "\n"
-      "Usage: " PACKAGE " [options]\n\n"
+      "Usage: [options]\n\n"
       "* Where options can be:" },
   {LIST, 0, "l" , "list" ,Arg::NonEmpty,
     "  --list, -l <file> "
@@ -95,6 +95,7 @@ const option::Descriptor usage[] = {
       "\tPrint usage and exit." }
 };
 
+
 option::Option *options = NULL, *buffer = NULL;
 void deleteOptsArrays() {
   if (options) {
@@ -120,7 +121,7 @@ int main(int argc, char ** argv){
     cout << "Bad usage!!!" << endl;
     return EXIT_FAILURE;
   }
-}
+
 
 
 /**********************************/
@@ -135,11 +136,11 @@ if (options[HELP] || argc == 0) {
 /* Complain about unknown arguments */
 /************************************/
 for (int i = 0; i < parse.nonOptionsCount(); ++i) {
-  DEBUG_MSG("Non-option argument #" << i << " is " << parse.nonOption(i));
-  log_error << "Ignoring unknown argument '" << parse.nonOption(i) << "'" << endl;
+  cout << "Non-option argument #" << i << " is " << parse.nonOption(i)<<endl;
+  cout << "Ignoring unknown argument '" << parse.nonOption(i) << "'" << endl;
 }
 if (parse.nonOptionsCount()) {
-  log_error << endlog;
+    cout << "Bad usage!!!" << endl;
   return EXIT_FAILURE;
 }
 
@@ -151,13 +152,12 @@ start = std::chrono::system_clock::now();
 /*****************************************/
 /* Add the genomes given in config files */
 /*****************************************/
-for (option::Option* opt = options[LIST];
-    cout << "TODO ADD GENOOMES " << endl;
-
+    if (options[LIST]) {
+        cout << "TODO ADD GENOOMES " << endl;
+    }
     monidex.insert_file_of_file_whole("/home/bilbok/Documents/NiHM/Tools/dashing/fof.txt");
     endindex = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = endindex - start;
-
     std::cout << "Indexing lasted " << elapsed_seconds.count() << "s\n";
     monidex.query_file_of_file_whole("/home/bilbok/Documents/NiHM/Tools/dashing/fof.txt");
     end = std::chrono::system_clock::now();
@@ -172,7 +172,7 @@ for (option::Option* opt = options[LIST];
     /* Display the ASCII art logo of the program. */
     /**********************************************/
     if (options[LOGO_OPT]) {
-      ifstream logo ("../resources/redoak.ascii");
+      ifstream logo ("../resources/nihm.ascii");
       string line;
 
       if (logo.is_open()){
