@@ -101,7 +101,7 @@ Auteurs/Authors:
 ----------------
 
 * Clément AGRET     <clement.agret@lirmm.fr>
-* Bastien CAZAUX    <bastien.casaux@univ-lille.fr>
+* Bastien CAZAUX    <bastien.cazaux@univ-lille.fr>
 * Antoine LIMASSET  <antoine.limasset@univ-lille.fr>
 
 Programmeurs/Programmers:
