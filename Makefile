@@ -157,7 +157,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/config/compile \
 	$(top_srcdir)/config/config.h.in \
 	$(top_srcdir)/config/install-sh $(top_srcdir)/config/missing \
-	config/compile config/install-sh config/missing
+	config/compile config/depcomp config/install-sh config/missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
