@@ -18,6 +18,12 @@ AC_CONFIG_HEADERS([config/config.h])
 # ChangeLog, COPYING, AUTHORS, INSTALL, README etc. files.
 AM_INIT_AUTOMAKE([-Wall -Werror foreign]) 
 
+AC_CHECK_LIB(zlib, zlib)
+
+${CXXFLAGS="-g -O3 -Wall -std=c++11 -pedantic -lz -fopenmp -flto -march=native -mtune=native"}
+${LDFLAGS="-lz -fopenmp"}
+
+
 # Check for C compiler
 AC_PROG_CXX
 # Check for C++ compiler
@@ -33,13 +39,13 @@ AC_CONFIG_FILES([
 AC_OUTPUT
 
 #dnl add option for compiling with OpenMP 
-#AC_ARG_ENABLE([OpenMP],               
-#	      [AS_HELP_STRING([--disable-OpenMP],                               
-#			      [Disable the use of OpenMP])],               
-#		[],               
-#		[AX_OPENMP]) 
-#dnl Checks for libraries. 
-#CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops" 
-#CXXFLAGS="${CXXFLAGS} ${OPENMP_CXXFLAGS}" 
-#CFLAGS="${OPENMP_CFLAGS}" 
-#LDFLAGS="${OPENMP_LDFLAG}"
+AC_ARG_ENABLE([OpenMP],               
+	      [AS_HELP_STRING([--disable-OpenMP],                               
+			      [Disable the use of OpenMP])],               
+		[],               
+		[AX_OPENMP]) 
+dnl Checks for libraries. 
+CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops" 
+CXXFLAGS="${CXXFLAGS} ${OPENMP_CXXFLAGS}" 
+CFLAGS="${OPENMP_CFLAGS}" 
+LDFLAGS="${OPENMP_LDFLAG}"
