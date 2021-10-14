@@ -72,6 +72,9 @@ enum  optionIndex {
   UNKNOWN,
   LIST,
   KMER,
+  FETCH,
+  WORD,
+  HHL,
   QUERY_FILE,
   OUTPUT,
   LOGO_OPT,
@@ -87,8 +90,28 @@ const option::Descriptor usage[] = {
       "\tUse the content of the given (raw formatted) <file> to load genomes.\v"
       "Example:"
       "\v  --list my_genomes.txt" },
-  {QUERY_FILE, 0, "F", "query-file"    , Arg::NonEmpty,
-    "  --query-file, -F <sequence_files> "
+  {KMER,  0, "K" , "kmer"  ,Arg::Numeric,
+   "  --kmer, -K <int> "
+   "\tSet the value of paramter K to the given value.\v"
+   "Example:"
+   "\v  --kmer 31 or -K 31" },
+  {FETCH,  0, "F" , "Fetch"  ,Arg::Numeric,
+   "  --Fetch, -F <int> "
+   "\tSet the value of paramter F to the given value.\v"
+   "Example:"
+   "\v  --Fetch 16 or -F 16" },
+  {WORD,  0, "W" , "Word"  ,Arg::Numeric,
+   "  --Word, -W <int> "
+   "\tSet the value of paramter W to the given value.\v"
+   "Example:"
+   "\v  --Word 10 or -W 10" },
+  {HHL,  0, "H" , "HHL"  ,Arg::Numeric,
+   "  --HHL, -H <int> "
+   "\tSet the value of paramter H to the given value.\v"
+   "Example:"
+   "\v  --HHL 4 or -H 4" },
+  {QUERY_FILE, 0, "Q", "query-file"    , Arg::NonEmpty,
+    "  --query-file, -Q <sequence_files> "
       "\tFor each sequence in the <sequence_files> search the sequence in the index and print the genomes"
       " with this sequence.\v"
       "The query file can be either a fasta formatted file (each sequence being a query) or a one line "
@@ -123,21 +146,14 @@ void deleteOptsArrays() {
 
 
 int main(int argc, char * argv[]){
-
-//cout << "I'm HERE 0" << endl;
+  int F=16,K=31,W=10,H=4;
   string filename = "";
-//cout << "I'm HERE 1" << endl;
   argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
   option::Stats stats(true, usage, argc, argv);
-//cout << "I'm HERE 2"  << endl;
   options = new option::Option[stats.options_max];
-//cout << "I'm HERE 3" << endl;
   buffer = new option::Option[stats.buffer_max];
-//cout << "I'm HERE 4" << endl;
   atexit(deleteOptsArrays);
-//cout << "I'm HERE 5" << endl;
   option::Parser parse(usage, argc, argv, options, buffer);
-//cout << "I'm HERE 6" << endl;
 
   if (parse.error()) {
     cout << "Bad usage!!!" << endl;
@@ -146,13 +162,35 @@ int main(int argc, char * argv[]){
 
 
   /**********************************/
-  /* Check Help and Version options */
+  /* Check Help             options */
   /**********************************/
   if (options[HELP] || argc == 0) {
     option::printUsage(clog, usage);
     return EXIT_SUCCESS;
   }
 
+  /***********************************/
+  /* Set the k-mer length and Other  */
+  /***********************************/
+  if (options[KMER]) {
+    K = atoi(options[KMER].last()->arg);
+      cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+
+  }
+  if (options[F]) {
+    F = atoi(options[FETCH].last()->arg);
+  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+
+
+}
+  if (options[H]) {
+H = atoi(options[HHL].last()->arg);
+  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+  }
+  if (options[W]) {
+    W = atoi(options[WORD].last()->arg);
+  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+  }
 
   /************************************/
   /* Complain about unknown arguments */
@@ -166,8 +204,9 @@ int main(int argc, char * argv[]){
     return EXIT_FAILURE;
   }
 
-  cout << "TODO ADD GENOOMES " << endl;
-  Index monidex(16,31,10,4);
+  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+  //    Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
+  Index monidex(F,K,W,H);
   time_point<system_clock> start, endindex,end;
 
   start = std::chrono::system_clock::now();
@@ -195,17 +234,15 @@ int main(int argc, char * argv[]){
   /* Display the ASCII art logo of the program. */
   /**********************************************/
   if (options[LOGO_OPT]) {
-    ifstream logo ("../resources/nihm.ascii");
+    ifstream logo;
     string line;
-
+    logo.open("../resources/nihm.ascii");
     if (logo.is_open()){
       while ( getline (logo,line) ){
         cout << line << '\n';
       }
       logo.close();
-    }
-
-    else cout << "Unable to open file";
+    }  else cout << "Unable to open file";
     return EXIT_SUCCESS;
   }
 
