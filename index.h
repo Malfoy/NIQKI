@@ -2,7 +2,8 @@
 #define index
 
 
-
+#include "strict_fstream.hpp"
+#include "zstr.hpp"
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
@@ -18,10 +19,12 @@
 
 
 
+
 using namespace std;
 using gid = uint32_t;
 using kmer = uint64_t;
 using query_output=vector<pair<gid, uint32_t>>;
+const uint32_t mutex_number=65536;
 
 
 
@@ -43,6 +46,7 @@ public:
     //VARIABLE
     uint32_t genome_numbers;//Number of genomes
     vector<gid>* Buckets;
+    omp_lock_t lock[mutex_number];
 
 
 
@@ -60,7 +64,10 @@ public:
         mask_fingerprint=((uint64_t)1<<(64-lF))-1;
         Buckets=new vector<gid>[fingerprint_range*F];
         offsetUpdatekmer=1;
-	offsetUpdatekmer<<=2*K;
+	    offsetUpdatekmer<<=2*K;
+        for(uint i(0);i<mutex_number;++i){
+			 omp_init_lock(&lock[i]);
+		}
     }
 
 
@@ -300,7 +307,9 @@ public:
     void insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id) {
         for(uint i(0);i<F;++i) {
             if(sketch[i]<fingerprint_range and sketch[i]>=0) {
+                omp_set_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
                 Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
+                omp_unset_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
             }
         }
     }
@@ -353,7 +362,7 @@ public:
     //all the lines from the file is considered as a separate entry with a different identifier
     //TODO HANDLE FASTQ multiFASTA
     void insert_file_lines(const string& filestr) {
-        ifstream in(filestr);
+        zstr::ifstream in(filestr);
         string ref,head;
         while(not in.eof()) {
 			{
@@ -372,7 +381,7 @@ public:
 
 
     void query_file_lines(const string& filestr) {
-        ifstream in(filestr);
+        zstr::ifstream in(filestr);
         string ref,head;
         while(not in.eof()) {
             {
@@ -410,7 +419,7 @@ inline bool exists_test (const std::string& name) {
 
 //HERE all the kmer of the file are put in a single sketch and inserted
     void insert_file_whole(const string& filestr) {
-        ifstream in(filestr);
+        zstr::ifstream in(filestr);
         string ref,head;
         vector<uint64_t> kmer_sketch;
         vector<int32_t> sketch(F,-1);
@@ -429,8 +438,32 @@ inline bool exists_test (const std::string& name) {
             sketch[i]=get_fingerprint(kmer_sketch[i]);
         }
         // cout<<"get fingerprintOK"<<endl;
-        insert_sketch(sketch,genome_numbers);;
+        insert_sketch(sketch,genome_numbers);
         genome_numbers++;
+    }
+
+
+       void insert_file_whole(const string& filestr,uint32_t identifier) {
+        zstr::ifstream in(filestr);
+        string ref,head;
+        vector<uint64_t> kmer_sketch;
+        vector<int32_t> sketch(F,-1);
+        while(not in.eof()) {
+			{
+				getline(in,head);
+				getline(in,ref);
+			}
+            if(ref.size()>K) {
+                compute_sketch_kmer(ref,kmer_sketch);
+            }
+            ref.clear();
+        }   
+        // cout<<"get fingerprint"<<endl;
+        for(uint i(0);i<F;++i) {
+            sketch[i]=get_fingerprint(kmer_sketch[i]);
+        }
+        // cout<<"get fingerprintOK"<<endl;
+        insert_sketch(sketch,identifier);
     }
 
 
@@ -439,11 +472,17 @@ inline bool exists_test (const std::string& name) {
     void insert_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
         string ref;
-
+        #pragma omp parallel
         while(not in.eof()) {
-			getline(in,ref);
+            uint32_t id;
+            #pragma omp critical
+            {
+			    getline(in,ref);
+                id=genome_numbers;
+                genome_numbers++;
+            }
             if(exists_test(ref)) {
-                insert_file_whole(ref);
+                insert_file_whole(ref,id);
             }
         }
     }
@@ -452,7 +491,7 @@ inline bool exists_test (const std::string& name) {
 
     //HERE all the kmer of the file are put in a single sketch and Queried
     void query_file_whole(const string& filestr) {
-        ifstream in(filestr);
+        zstr::ifstream in(filestr);
         string ref,head;
         vector<uint64_t> kmer_sketch;
         vector<int32_t> sketch(F,-1);
@@ -480,17 +519,34 @@ inline bool exists_test (const std::string& name) {
     void query_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
         string ref;
-
+        #pragma omp parallel
         while(not in.eof()){
-            getline(in,ref);
+            #pragma omp critical
+            {
+             getline(in,ref);
+            }
             if(exists_test(ref)){
                 query_file_whole(ref);
             }
         }
     }
 
+    // uint32_t genome_numbers;//Number of genomes
 
-
+    void dump_index_disk(const string& prefix){
+        zstr::ofstream out(prefix+".nihm.gz");
+        out.write(reinterpret_cast<const char*>(&K), sizeof(K));
+        out.write(reinterpret_cast<const char*>(&F), sizeof(F));
+        out.write(reinterpret_cast<const char*>(&W), sizeof(W));
+        out.write(reinterpret_cast<const char*>(&mask_M), sizeof(mask_M));
+        out.write(reinterpret_cast<const char*>(&maximal_remainder), sizeof(maximal_remainder));
+        out.write(reinterpret_cast<const char*>(&lF), sizeof(lF));
+        out.write(reinterpret_cast<const char*>(&fingerprint_range), sizeof(fingerprint_range));
+        out.write(reinterpret_cast<const char*>(&mask_fingerprint), sizeof(mask_fingerprint));
+        out.write(reinterpret_cast<const char*>(&expected_gemome_size), sizeof(expected_gemome_size));
+        out.write(reinterpret_cast<const char*>(&offsetUpdatekmer), sizeof(offsetUpdatekmer));
+        out.write(reinterpret_cast<const char*>(&genome_numbers), sizeof(genome_numbers));
+    }
 };
 
 

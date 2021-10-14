@@ -1,3 +1,5 @@
+#include "strict_fstream.hpp"
+#include "zstr.hpp"
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
@@ -31,7 +33,6 @@ int main(int argc, char ** argv){
     monidex.insert_file_of_file_whole("fof100.txt");
     endindex = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = endindex - start;
-  
     std::cout << "Indexing lasted " << elapsed_seconds.count() << "s\n";
     monidex.query_file_of_file_whole("fof100.txt");
     end = std::chrono::system_clock::now();
