@@ -50,6 +50,7 @@ class Index {
      * \brief Default constructor.
      */
     Index();
+    Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
 
     /**
      * \brief Destructor.
@@ -70,8 +71,6 @@ class Index {
 
     kmer rcb(kmer min)const;
 
-    void print_bin(uint64_t n,uint bits_to_print=64)const;
-
     kmer str2numstrand(const string& str)const;
 
     uint32_t get_fingerprint(uint64_t hashed)const;
@@ -85,12 +84,50 @@ class Index {
 
     void insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id);
 
-    //TODO Optmiser : compter les genomes id
-    query_output query_sketch(const vector<int32_t>& sketch,uint32_t min_score=1) const;
+    inline void print_bin(uint64_t n,uint bits_to_print=64) const{
+        uint64_t mask=1;
+        mask<<=bits_to_print-1;
+        for(uint i(0);i<bits_to_print;++i){
+            cout<<n/mask;
+            if(n/mask==1){n-=mask;}
+            mask>>=1;
+        }
+        cout<<"\n";
+    }
 
-    query_output query_sequence(const string& str,uint32_t min_score=1)const;
+    inline query_output query_sketch(const vector<int32_t>& sketch,uint32_t min_score=1)const {
+        query_output result;
+        unordered_map<gid,uint32_t> counts;
+        for(uint i(0);i<F;++i){
+            if(sketch[i]<fingerprint_range and sketch[i]>0){
+                for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+                    counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+                }
+            }
+        }
+        for(auto it=counts.begin();it!=counts.end();it++) {
+            if(it->second>=min_score){
+                result.push_back({it->second,it->first});
+            }
+        }
+        sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
+        return result;
+    }
 
-    query_output query_sequence(const string& str,double fraction)const;
+
+
+    inline query_output query_sequence(const string& str,uint32_t min_score=1)const {
+        vector<int32_t> sketch;
+        compute_sketch(str,sketch);
+        return query_sketch(sketch,min_score);
+    }
+
+
+
+    inline query_output query_sequence(const string& str,double fraction)const {
+        return query_sequence(str,F*fraction);
+    }
+
 
     void insert_sequence(const string& str,uint32_t genome_id);
 

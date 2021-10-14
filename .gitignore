@@ -11,12 +11,13 @@ doc/doxygen.cfg
 
 packaging/lib*.pc
 
-src/.deps/
-src/.libs/
-src/redoak
-src/redoak_shell_proxy
-src/ChangeLog
+src/.deps/*.Po
+src/.deps/*
+src/.libs/*
+src/nihm
 
+*.Po
+*.Tpo
 *.swp
 *.la
 *.lo
