@@ -124,20 +124,20 @@ void deleteOptsArrays() {
 
 int main(int argc, char * argv[]){
 
-cout << "I'm HERE 0" << endl;
+//cout << "I'm HERE 0" << endl;
   string filename = "";
-cout << "I'm HERE 1" << endl;
+//cout << "I'm HERE 1" << endl;
   argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
   option::Stats stats(true, usage, argc, argv);
-cout << "I'm HERE 2"  << endl;
+//cout << "I'm HERE 2"  << endl;
   options = new option::Option[stats.options_max];
-cout << "I'm HERE 3" << endl;
+//cout << "I'm HERE 3" << endl;
   buffer = new option::Option[stats.buffer_max];
-cout << "I'm HERE 4" << endl;
+//cout << "I'm HERE 4" << endl;
   atexit(deleteOptsArrays);
-cout << "I'm HERE 5" << endl;
+//cout << "I'm HERE 5" << endl;
   option::Parser parse(usage, argc, argv, options, buffer);
-cout << "I'm HERE 6" << endl;
+//cout << "I'm HERE 6" << endl;
 
   if (parse.error()) {
     cout << "Bad usage!!!" << endl;
@@ -145,11 +145,11 @@ cout << "I'm HERE 6" << endl;
   }
 
 
-
   /**********************************/
   /* Check Help and Version options */
   /**********************************/
   if (options[HELP] || argc == 0) {
+    option::printUsage(clog, usage);
     return EXIT_SUCCESS;
   }
 
