@@ -1,6 +1,9 @@
 bin_PROGRAMS = nihm
 
 common_SOURCES = \
+  zstr.hpp \
+  strict_fstream.hpp \
+  zstr_make_unique_polyfill.h \
   nihm_index.h nihm_index.cpp
 
 nihm_SOURCES = \

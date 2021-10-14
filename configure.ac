@@ -20,7 +20,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_CHECK_LIB(zlib, zlib)
 
-${CXXFLAGS="-g -O3 -Wall -std=c++11 -pedantic -lz -fopenmp -flto -march=native -mtune=native"}
+${CXXFLAGS="-g -O3 -Wall -std=c++11 -pedantic -flto -march=native -mtune=native"}
 ${LDFLAGS="-lz -fopenmp"}
 
 
@@ -31,12 +31,7 @@ AC_PROG_CPP
 
 # Tells automake to create a Makefile
 # See https://www.gnu.org/software/automake/manual/html_node/Requirements.html
-AC_CONFIG_FILES([
-		 Makefile src/Makefile
-		 ])
 
-# Generate the output
-AC_OUTPUT
 
 #dnl add option for compiling with OpenMP 
 AC_ARG_ENABLE([OpenMP],               
@@ -49,3 +44,43 @@ CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops"
 CXXFLAGS="${CXXFLAGS} ${OPENMP_CXXFLAGS}" 
 CFLAGS="${OPENMP_CFLAGS}" 
 LDFLAGS="${OPENMP_LDFLAG}"
+
+
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([\
+    libintl.h stdint.h \
+    sys/ioctl.h sys/time.h \
+    unistd.h zlib.h\
+  ], [], [AC_MSG_ERROR([Header file '${ac_header}' not found.])])
+dnl Checks for library functions.
+AC_SEARCH_LIBS([deflate], [z], [], [AC_MSG_ERROR([Library 'zlib' not found.])])
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_SIZE_T
+AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+
+dnl Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_STRTOD
+AC_CHECK_FUNCS([\
+  atexit memchr memset setlocale \
+  strcasecmp strdup strerror strtoul \
+])
+
+dnl Add original existing environment variables at the end of configures variables (allow override)
+LDADD="${LDADD} ${ORIG_LDADD}"
+LDFLAGS="${LDFLAGS} ${ORIG_LDFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${ORIG_CXXFLAGS}"
+
+
+AC_CONFIG_FILES([
+  Makefile src/Makefile
+])
+AC_OUTPUT

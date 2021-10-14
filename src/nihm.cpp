@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <bitset>
 
-
+#include <zlib.h>
 
 using namespace std;
 using namespace chrono;
