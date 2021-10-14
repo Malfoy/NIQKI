@@ -67,6 +67,7 @@ struct Arg: public option::Arg {
   }
 };
 
+
 enum  optionIndex {
   UNKNOWN,
   LIST,
@@ -104,7 +105,8 @@ const option::Descriptor usage[] = {
   {UNKNOWN, 0,"" , ""    , Arg::Unknown, "\n* Other usage:"},
   {HELP,  0, "h" , "help"  ,Arg::None,
     "  --help, -h  "
-      "\tPrint usage and exit." }
+      "\tPrint usage and exit." },
+  {0,0,0,0,0,0}
 };
 
 
