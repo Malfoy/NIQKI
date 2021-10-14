@@ -34,6 +34,13 @@
 using namespace std;
 using namespace chrono;
 
+using option::Option;
+using option::Descriptor;
+using option::Parser;
+using option::Stats;
+using option::ArgStatus;
+
+
 struct Arg: public option::Arg {
   static void printError(const char* msg1, const option::Option& opt, const char* msg2) {
     fprintf(stderr, "%s", msg1);
@@ -60,7 +67,6 @@ struct Arg: public option::Arg {
   }
 };
 
-
 enum  optionIndex {
   UNKNOWN,
   LIST,
@@ -74,10 +80,7 @@ enum  optionIndex {
 
 
 const option::Descriptor usage[] = {
-  {UNKNOWN, 0,"" , ""    , Arg::Unknown,
-    "\n"
-      "Usage: [options]\n\n"
-      "* Where options can be:" },
+  {UNKNOWN, 0,"" , "" , Arg::Unknown,0},
   {LIST, 0, "l" , "list" ,Arg::NonEmpty,
     "  --list, -l <file> "
       "\tUse the content of the given (raw formatted) <file> to load genomes.\v"
@@ -117,7 +120,7 @@ void deleteOptsArrays() {
 
 
 
-int main(int argc, char ** argv){
+int main(int argc, char * argv[]){
 
 cout << "I'm HERE 0" << endl;
   string filename = "";
