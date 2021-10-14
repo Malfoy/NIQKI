@@ -16,7 +16,7 @@
 #include <unordered_set>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <omp.h>
 
 
 
