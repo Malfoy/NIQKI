@@ -20,9 +20,10 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_CHECK_LIB(zlib, zlib)
 
-${CXXFLAGS="-g -O3 -Wall -std=c++11 -pedantic -flto -march=native -mtune=native"}
-${LDFLAGS="-lz -fopenmp"}
-
+dnl Save existing environment variables
+ORIG_LDADD=${LDADD}
+ORIG_LDFLAGS=${LDFLAGS}
+ORIG_CXXFLAGS=${CXXFLAGS}
 
 # Check for C compiler
 AC_PROG_CXX
@@ -39,25 +40,24 @@ AC_ARG_ENABLE([OpenMP],
 			      [Disable the use of OpenMP])],               
 		[],               
 		[AX_OPENMP]) 
-dnl Checks for libraries. 
-CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops" 
+#dnl Checks for libraries.
+CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp"
 CXXFLAGS="${CXXFLAGS} ${OPENMP_CXXFLAGS}" 
 CFLAGS="${OPENMP_CFLAGS}" 
 LDFLAGS="${OPENMP_LDFLAG}"
 
 
-
-dnl Checks for header files.
+#dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([\
     libintl.h stdint.h \
     sys/ioctl.h sys/time.h \
     unistd.h zlib.h\
   ], [], [AC_MSG_ERROR([Header file '${ac_header}' not found.])])
-dnl Checks for library functions.
+#dnl Checks for library functions.
 AC_SEARCH_LIBS([deflate], [z], [], [AC_MSG_ERROR([Library 'zlib' not found.])])
 
-dnl Checks for typedefs, structures, and compiler characteristics.
+#dnl Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -66,7 +66,7 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 
-dnl Checks for library functions.
+#dnl Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([\
@@ -74,7 +74,7 @@ AC_CHECK_FUNCS([\
   strcasecmp strdup strerror strtoul \
 ])
 
-dnl Add original existing environment variables at the end of configures variables (allow override)
+#dnl Add original existing environment variables at the end of configures variables (allow override)
 LDADD="${LDADD} ${ORIG_LDADD}"
 LDFLAGS="${LDFLAGS} ${ORIG_LDFLAGS}"
 CXXFLAGS="${CXXFLAGS} ${ORIG_CXXFLAGS}"

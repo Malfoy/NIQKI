@@ -4007,9 +4007,9 @@ _ACEOF
 fi
 
 
-${CXXFLAGS="-g -O3 -Wall -std=c++11 -pedantic -flto -march=native -mtune=native"}
-${LDFLAGS="-lz -fopenmp"}
-
+ORIG_LDADD=${LDADD}
+ORIG_LDFLAGS=${LDFLAGS}
+ORIG_CXXFLAGS=${CXXFLAGS}
 
 # Check for C compiler
 ac_ext=cpp
@@ -4548,13 +4548,14 @@ else
   AX_OPENMP
 fi
 
-CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops"
+#dnl Checks for libraries.
+CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp"
 CXXFLAGS="${CXXFLAGS} ${OPENMP_CXXFLAGS}"
 CFLAGS="${OPENMP_CFLAGS}"
 LDFLAGS="${OPENMP_LDFLAG}"
 
 
-
+#dnl Checks for header files.
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
 $as_echo_n "checking for grep that handles long lines and -e... " >&6; }
@@ -4834,6 +4835,7 @@ fi
 
 done
 
+#dnl Checks for library functions.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing deflate" >&5
 $as_echo_n "checking for library containing deflate... " >&6; }
 if ${ac_cv_search_deflate+:} false; then :
@@ -4893,6 +4895,7 @@ else
 fi
 
 
+#dnl Checks for typedefs, structures, and compiler characteristics.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdbool.h that conforms to C99" >&5
 $as_echo_n "checking for stdbool.h that conforms to C99... " >&6; }
 if ${ac_cv_header_stdbool_h+:} false; then :
@@ -5088,6 +5091,7 @@ _ACEOF
   esac
 
 
+#dnl Checks for library functions.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for error_at_line" >&5
 $as_echo_n "checking for error_at_line... " >&6; }
 if ${ac_cv_lib_error_at_line+:} false; then :
@@ -5252,6 +5256,7 @@ fi
 done
 
 
+#dnl Add original existing environment variables at the end of configures variables (allow override)
 LDADD="${LDADD} ${ORIG_LDADD}"
 LDFLAGS="${LDFLAGS} ${ORIG_LDFLAGS}"
 CXXFLAGS="${CXXFLAGS} ${ORIG_CXXFLAGS}"
