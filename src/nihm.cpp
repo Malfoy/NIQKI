@@ -75,9 +75,9 @@ enum  optionIndex {
   FETCH,
   WORD,
   HHL,
-  QUERY_FILE,
+  QUERY,
   OUTPUT,
-  LOGO_OPT,
+  LOGO,
   HELP
 };
 
@@ -91,37 +91,37 @@ const option::Descriptor usage[] = {
       "Example:"
       "\v  --list my_genomes.txt" },
   {KMER,  0, "K" , "kmer"  ,Arg::Numeric,
-   "  --kmer, -K <int> "
-   "\tSet the value of paramter K to the given value.\v"
-   "Example:"
-   "\v  --kmer 31 or -K 31" },
+    "  --kmer, -K <int> "
+      "\tSet the value of paramter K to the given value.\v"
+      "Example:"
+      "\v  --kmer 31 or -K 31" },
   {FETCH,  0, "F" , "Fetch"  ,Arg::Numeric,
-   "  --Fetch, -F <int> "
-   "\tSet the value of paramter F to the given value.\v"
-   "Example:"
-   "\v  --Fetch 16 or -F 16" },
+    "  --Fetch, -F <int> "
+      "\tSet the value of paramter F to the given value.\v"
+      "Example:"
+      "\v  --Fetch 16 or -F 16" },
   {WORD,  0, "W" , "Word"  ,Arg::Numeric,
-   "  --Word, -W <int> "
-   "\tSet the value of paramter W to the given value.\v"
-   "Example:"
-   "\v  --Word 10 or -W 10" },
+    "  --Word, -W <int> "
+      "\tSet the value of paramter W to the given value.\v"
+      "Example:"
+      "\v  --Word 10 or -W 10" },
   {HHL,  0, "H" , "HHL"  ,Arg::Numeric,
-   "  --HHL, -H <int> "
-   "\tSet the value of paramter H to the given value.\v"
-   "Example:"
-   "\v  --HHL 4 or -H 4" },
-  {QUERY_FILE, 0, "Q", "query-file"    , Arg::NonEmpty,
-    "  --query-file, -Q <sequence_files> "
+    "  --HHL, -H <int> "
+      "\tSet the value of paramter H to the given value.\v"
+      "Example:"
+      "\v  --HHL 4 or -H 4" },
+  {QUERY, 0, "Q", "query"    , Arg::NonEmpty,
+    "  --query, -Q <filename> "
       "\tFor each sequence in the <sequence_files> search the sequence in the index and print the genomes"
       " with this sequence.\v"
       "The query file can be either a fasta formatted file (each sequence being a query) or a one line "
       "Examples:"
-      "\v --query-file 'sequence_files.txt'" },
+      "\v --query 'sequence_files.txt'" },
   {OUTPUT, 0, "o", "output", Arg::NonEmpty,
     "  --output, -o <filename> "
       "\tDump the current index in text format to the given file."
   },
-  {LOGO_OPT, 0, "",  "logo", Arg::None,
+  {LOGO, 0, "",  "logo", Arg::None,
     "  --logo "
       "\tPrint ASCII art logo, then exit."
   },
@@ -147,7 +147,8 @@ void deleteOptsArrays() {
 
 int main(int argc, char * argv[]){
   int F=16,K=31,W=10,H=4;
-  string filename = "";
+  string list_file = "";
+  string query_file = "";
   argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
   option::Stats stats(true, usage, argc, argv);
   options = new option::Option[stats.options_max];
@@ -174,22 +175,22 @@ int main(int argc, char * argv[]){
   /***********************************/
   if (options[KMER]) {
     K = atoi(options[KMER].last()->arg);
-      cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
 
   }
   if (options[F]) {
     F = atoi(options[FETCH].last()->arg);
-  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
 
 
-}
+  }
   if (options[H]) {
-H = atoi(options[HHL].last()->arg);
-  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+    H = atoi(options[HHL].last()->arg);
+    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
   }
   if (options[W]) {
     W = atoi(options[WORD].last()->arg);
-  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
   }
 
   /************************************/
@@ -208,24 +209,41 @@ H = atoi(options[HHL].last()->arg);
   //    Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
   Index monidex(F,K,W,H);
   time_point<system_clock> start, endindex,end;
-
   start = std::chrono::system_clock::now();
 
   /*****************************************/
   /* Add the genomes given in config files */
   /*****************************************/
   if (options[LIST]) {
-    cout << "TODO ADD GENOOMES " << endl;
+    list_file = options[LIST].last()->arg;       
+    ifstream ifs(list_file);
+    if (!ifs) {
+      cout << "Unable to open the file '" << list_file << "'" << endl;
+    }
+    cout << "Opening file..." << endl;
+    monidex.insert_file_of_file_whole(list_file);
+    cout << "File added" << endl;
   }
-  monidex.insert_file_of_file_whole("/home/bilbok/Documents/NiHM/Tools/dashing/fof.txt");
   endindex = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = endindex - start;
   std::cout << "Indexing lasted " << elapsed_seconds.count() << "s\n";
-  monidex.query_file_of_file_whole("/home/bilbok/Documents/NiHM/Tools/dashing/fof.txt");
+
+  /*****************************************/
+  /* Add the query file and do the request */
+  /*****************************************/
+  if (options[QUERY]) {
+    query_file = options[QUERY].last()->arg;       
+    ifstream ifs(query_file);
+    if (!ifs) {
+      cout << "Unable to open the file '" << query_file << "'" << endl;
+    }
+    cout << "Opening file..." << endl;
+    monidex.query_file_of_file_whole(query_file);
+  }
   end = std::chrono::system_clock::now();
-  elapsed_seconds =end-  endindex;
+  elapsed_seconds = end - endindex;
   cout << "Query lasted " << elapsed_seconds.count() << "s\n";
-  elapsed_seconds =end-  start;
+  elapsed_seconds = end - start;
   cout<<"whole run tool took " << elapsed_seconds.count() << endl;
 
 
@@ -233,7 +251,7 @@ H = atoi(options[HHL].last()->arg);
   /**********************************************/
   /* Display the ASCII art logo of the program. */
   /**********************************************/
-  if (options[LOGO_OPT]) {
+  if (options[LOGO]) {
     ifstream logo;
     string line;
     logo.open("../resources/nihm.ascii");
