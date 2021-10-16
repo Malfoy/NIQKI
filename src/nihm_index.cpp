@@ -330,11 +330,11 @@ void Index::insert_file_whole(const string& filestr) {
     }
     ref.clear();
   }   
-  // cout<<"get fingerprint"<<endl;
+  //cout<<"get fingerprint"<<endl;
   for(uint i(0);i<F;++i) {
     sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
-  // cout<<"get fingerprintOK"<<endl;
+  //cout<<"get fingerprintOK"<<endl;
   insert_sketch(sketch,genome_numbers);;
   genome_numbers++;
 }
@@ -368,6 +368,7 @@ void Index::insert_file_whole(const string& filestr) {
 //HERE all the files of the fof are inserted as a separate entry in the index
     void Index::insert_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
+        cout<<"DEBUG : File name = '"<<filestr<<"'"<<endl;
         string ref;
         #pragma omp parallel
         while(not in.eof()) {
@@ -377,6 +378,7 @@ void Index::insert_file_whole(const string& filestr) {
 			    getline(in,ref);
                 id=genome_numbers;
                 genome_numbers++;
+                cout << "Genome numbers : "<< genome_numbers << endl;
             }
             if(exists_test(ref)) {
                 insert_file_whole(ref,id);
