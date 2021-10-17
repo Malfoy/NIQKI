@@ -40,12 +40,26 @@ AC_ARG_ENABLE([OpenMP],
 			      [Disable the use of OpenMP])],               
 		[],               
 		[AX_OPENMP]) 
+
 #dnl Checks for libraries.
 CXXFLAGS="-Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp"
 CXXFLAGS="${CXXFLAGS} ${OPENMP_CXXFLAGS}" 
 CFLAGS="${OPENMP_CFLAGS}" 
 LDFLAGS="${OPENMP_LDFLAG}"
 
+dnl Add option --enable-debug (default to --disable-debug)
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug],
+                              [Compile without optimization and with debug flag. Passing argument 'full' enable debugging informations.])])
+
+AS_IF([test -z "${enable_debug}" -o "x${enable_debug}" = "xno"],
+      [AC_DEFINE([NDEBUG],[],[Remove assertion checking])
+       CXXFLAGS="${CXXFLAGS} -O3"],
+      [CXXFLAGS="${CXXFLAGS} -g -O0 -fno-inline"
+       AS_IF([test "x${enable_debug}" == "xfull"],
+             [AC_DEFINE([DEBUG],[],[Output (lots of) debugging informations])]
+            )]
+     )
 
 #dnl Checks for header files.
 AC_HEADER_STDC

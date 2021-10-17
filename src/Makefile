@@ -187,7 +187,7 @@ CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  
+CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  -g -O0 -fno-inline 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -267,6 +267,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 common_SOURCES = \
+  common.h \
   zstr.hpp \
   strict_fstream.hpp \
   zstr_make_unique_polyfill.h \

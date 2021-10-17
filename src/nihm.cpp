@@ -1,5 +1,6 @@
 #include "nihm_index.h"
 #include "optionparser.h"
+#include "common.h"
 
 #include <vector>
 #include <string>
@@ -220,9 +221,9 @@ int main(int argc, char * argv[]){
     if (!ifs) {
       cout << "Unable to open the file '" << list_file << "'" << endl;
     }
-    cout << "Opening file..." << endl;
+    DEBUG_MSG("Opening file...");
     monidex.insert_file_of_file_whole(list_file);
-    cout << "File added" << endl;
+    DEBUG_MSG("File added");
   }
   endindex = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = endindex - start;
@@ -237,8 +238,9 @@ int main(int argc, char * argv[]){
     if (!ifs) {
       cout << "Unable to open the file '" << query_file << "'" << endl;
     }
-    cout << "Opening file..." << endl;
+    DEBUG_MSG("Opening file...");
     monidex.query_file_of_file_whole(query_file);
+    DEBUG_MSG("Query done.");
   }
   end = std::chrono::system_clock::now();
   elapsed_seconds = end - endindex;

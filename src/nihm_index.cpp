@@ -1,6 +1,7 @@
 #include "strict_fstream.hpp"
 #include "zstr.hpp"
 #include "nihm_index.h"
+#include "common.h"
 
 
 using namespace std;
@@ -368,7 +369,7 @@ void Index::insert_file_whole(const string& filestr) {
 //HERE all the files of the fof are inserted as a separate entry in the index
     void Index::insert_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
-        cout<<"DEBUG : File name = '"<<filestr<<"'"<<endl;
+        DEBUG_MSG("File name = '"<<filestr<<"'");
         string ref;
         #pragma omp parallel
         while(not in.eof()) {
@@ -378,7 +379,7 @@ void Index::insert_file_whole(const string& filestr) {
 			    getline(in,ref);
                 id=genome_numbers;
                 genome_numbers++;
-                cout << "Genome numbers : "<< genome_numbers << endl;
+                DEBUG_MSG("Genome numbers : "<< genome_numbers);
             }
             if(exists_test(ref)) {
                 insert_file_whole(ref,id);
@@ -408,7 +409,7 @@ void Index::query_file_whole(const string& filestr) {
     // cout<<i<<" "<<sketch.size()<<endl;
     sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
-  cout<<"Genome Name : "<<filestr<<endl;	
+  DEBUG_MSG("Genome Name : "<<filestr);
   // cout<<"la fingernbtoint"<<endl;
   auto out(query_sketch(sketch,10000));
   // cout<<out.size()<<endl;

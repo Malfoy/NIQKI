@@ -11,6 +11,13 @@ doc/doxygen.cfg
 
 packaging/lib*.pc
 
+config/config.h.in
+src/.deps/nihm.Po
+src/.deps/nihm_index.Po
+src/.deps/nihm_index.Tpo
+src/Makefile.am
+src/Makefile.in
+
 src/.deps/*.Po
 src/.deps/*
 src/.libs/*
