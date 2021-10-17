@@ -369,7 +369,7 @@ void Index::insert_file_whole(const string& filestr) {
 //HERE all the files of the fof are inserted as a separate entry in the index
     void Index::insert_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
-        DEBUG_MSG("File name = '"<<filestr<<"'");
+        //DEBUG_MSG("File name = '"<<filestr<<"'");
         string ref;
         #pragma omp parallel
         while(not in.eof()) {
@@ -379,7 +379,7 @@ void Index::insert_file_whole(const string& filestr) {
 			    getline(in,ref);
                 id=genome_numbers;
                 genome_numbers++;
-                DEBUG_MSG("Genome numbers : "<< genome_numbers);
+                //DEBUG_MSG("Genome numbers : "<< genome_numbers);
             }
             if(exists_test(ref)) {
                 insert_file_whole(ref,id);

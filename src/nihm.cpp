@@ -221,7 +221,7 @@ int main(int argc, char * argv[]){
     if (!ifs) {
       cout << "Unable to open the file '" << list_file << "'" << endl;
     }
-    DEBUG_MSG("Opening file...");
+    DEBUG_MSG("Opening file : '"<<list_file<<"'");
     monidex.insert_file_of_file_whole(list_file);
     DEBUG_MSG("File added");
   }
@@ -254,18 +254,20 @@ int main(int argc, char * argv[]){
   /* Display the ASCII art logo of the program. */
   /**********************************************/
   if (options[LOGO]) {
+    string logo_name="../resources/nihm.ascii";    
     ifstream logo;
     string line;
-    logo.open("../resources/nihm.ascii");
+    logo.open(logo_name);
     if (logo.is_open()){
       while ( getline (logo,line) ){
         cout << line << '\n';
       }
       logo.close();
-    }  else cout << "Unable to open file";
+    }  
+    else cout << "Unable to open file :'"<<logo_name<<"'"<<endl;
     return EXIT_SUCCESS;
   }
 
 
-  return 0;
+  return EXIT_SUCCESS;
 }
