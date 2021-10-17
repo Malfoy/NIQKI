@@ -409,7 +409,7 @@ void Index::query_file_whole(const string& filestr) {
     // cout<<i<<" "<<sketch.size()<<endl;
     sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
-  DEBUG_MSG("Genome Name : "<<filestr);
+  //DEBUG_MSG("Genome Name : "<<filestr);
   // cout<<"la fingernbtoint"<<endl;
   auto out(query_sketch(sketch,10000));
   // cout<<out.size()<<endl;
@@ -429,3 +429,20 @@ void Index::query_file_of_file_whole(const string& filestr) {
   }
 }
 
+
+
+void Index::toFile(const string &filename){
+  //long totalSize;
+  DEBUG_MSG("Creating'" << filename << "'");
+  ofstream outfile(filename);
+  stringstream buffer;
+  buffer << "### Index informations" << endl;
+  //char* buffer = new char[totalSize];
+  // write to outfile
+  DEBUG_MSG("Adding '" << buffer.str() << "' (" << buffer.str().length() << ")");
+  buffer.str("");
+  outfile.write(buffer.str().c_str(), buffer.str().length());
+  // release dynamically-allocated memory
+  //delete[] buffer;
+  outfile.close();
+}

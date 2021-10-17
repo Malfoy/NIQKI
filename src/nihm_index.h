@@ -162,6 +162,12 @@ class Index {
 
     void query_file_of_file_whole(const string& filestr);
 
+     /**
+     * \brief Write the Index object into the given file.
+     *
+     * \param filename The file to write.
+     */
+    void toFile(const string &filename);
 
 };
 

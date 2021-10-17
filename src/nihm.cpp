@@ -150,6 +150,7 @@ int main(int argc, char * argv[]){
   int F=16,K=31,W=10,H=4;
   string list_file = "";
   string query_file = "";
+  string out_file = "";
   argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
   option::Stats stats(true, usage, argc, argv);
   options = new option::Option[stats.options_max];
@@ -249,6 +250,11 @@ int main(int argc, char * argv[]){
   cout<<"whole run tool took " << elapsed_seconds.count() << endl;
 
 
+    if (options[OUTPUT]) {
+      out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput";
+      DEBUG_MSG("Output file name = " << out_file);
+      monidex.toFile(out_file);
+    }
 
   /**********************************************/
   /* Display the ASCII art logo of the program. */
