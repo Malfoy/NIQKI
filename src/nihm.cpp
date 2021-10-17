@@ -147,7 +147,7 @@ void deleteOptsArrays() {
 
 
 int main(int argc, char * argv[]){
-  int F=16,K=31,W=10,H=4;
+  int F=15,K=31,W=10,H=4;
   string list_file = "";
   string query_file = "";
   string out_file = "";
@@ -210,6 +210,8 @@ int main(int argc, char * argv[]){
   cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
   //    Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
   Index monidex(F,K,W,H);
+  cout<<F<<endl;
+  monidex.Download_NCBI_fof("genomic_file","sketches");
   time_point<system_clock> start, endindex,end;
   start = std::chrono::system_clock::now();
 

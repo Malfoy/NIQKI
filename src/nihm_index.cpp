@@ -446,3 +446,100 @@ void Index::toFile(const string &filename){
   //delete[] buffer;
   outfile.close();
 }
+
+
+
+atomic<uint32_t> genomes_downloaded(0);
+atomic<uint64_t> bases_downloaded(0);
+
+
+string exec(const char* cmd) {
+    array<char, 1024*1024> buffer;
+    string result;
+    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+		
+        result += buffer.data();
+    }
+    return result;
+}
+
+
+string get_name_ncbi(const string& str){
+	//~ cout<<str<<endl;
+	uint lastposition(0);
+	for(uint i(0);i<str.size()-3;++i){
+		if(str[i]=='/'){
+			lastposition=i;
+		}
+	}
+	lastposition++;
+	//~ cout<<str.substr(lastposition,str.size()-lastposition)<<endl;
+	return str.substr(lastposition,str.size()-lastposition);
+}
+
+
+void Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
+	string cmd("wget -qO - "+str+"/"+get_name_ncbi(str)+"_genomic.fna.gz |gzip -d -c ");
+	//~ cout<<cmd<<endl;
+	array<char, 1024*1024> buffer;
+    string result;
+    string sequence;
+    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result= buffer.data();
+        if(result[0]!='>'){
+			if(result[result.size()-1]=='\n'){
+				sequence+=result.substr(0,result.size()-1);
+			}else{
+				sequence+=result;
+			}
+		}else{
+			if(sequence.size()>K){
+				//~ cout<<sequence.substr(0,10)<<endl;
+				//~ cout<<sequence.substr(sequence.size()-10)<<endl;
+				compute_sketch_kmer(sequence,hashes);
+				bases_downloaded+=sequence.size();
+				sequence.clear();
+			}
+		}
+		result.clear();
+    }
+    uint gtemp=++genomes_downloaded;
+    if(gtemp%100==0){
+		cout<<"genomes ddl: "<<gtemp<<" bases ddl: "<<bases_downloaded<<endl;
+	}
+}
+
+
+
+//Hacky function to download genome from ncbi
+void Index::Download_NCBI_fof(const string& fofncbi,const string& outfile){
+	cout<<"go ncbi"<<endl;
+	zstr::ifstream in(fofncbi);
+	ofstream out(outfile);
+	#pragma omp parallel
+	while(not in.eof()){
+		string ref;
+		#pragma omp critical (in)
+		{
+			getline(in,ref);
+		}
+		vector<uint64_t> hashes(F,-1);
+		Download_NCBI(ref,hashes);
+		#pragma omp critical (out)
+		{
+			out.write(reinterpret_cast<const char*>(&hashes[0]),F*8);
+		}
+		ref.clear();
+	}
+	cout<<"genomes ddl: "<<genomes_downloaded<<" bases ddl: "<<bases_downloaded<<endl;
+}
+
+
