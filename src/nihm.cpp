@@ -212,6 +212,7 @@ int main(int argc, char * argv[]){
   Index monidex(F,K,W,H);
   cout<<F<<endl;
   monidex.Download_NCBI_fof("genomic_file","sketches");
+  exit(0);
   time_point<system_clock> start, endindex,end;
   start = std::chrono::system_clock::now();
 

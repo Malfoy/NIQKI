@@ -482,15 +482,16 @@ string get_name_ncbi(const string& str){
 }
 
 
-void Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
-	string cmd("wget -qO - "+str+"/"+get_name_ncbi(str)+"_genomic.fna.gz |gzip -d -c ");
+bool Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
+	string cmd("wget -qO - "+str+"/"+get_name_ncbi(str)+"_genomic.fna.gz | gzip -d -c -");
 	//~ cout<<cmd<<endl;
 	array<char, 1024*1024> buffer;
     string result;
     string sequence;
+    bool something_to_eat(false);
     unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
-        throw std::runtime_error("popen() failed!");
+        return false;
     }
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result= buffer.data();
@@ -502,6 +503,7 @@ void Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
 			}
 		}else{
 			if(sequence.size()>K){
+				something_to_eat=true;
 				//~ cout<<sequence.substr(0,10)<<endl;
 				//~ cout<<sequence.substr(sequence.size()-10)<<endl;
 				compute_sketch_kmer(sequence,hashes);
@@ -511,10 +513,13 @@ void Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
 		}
 		result.clear();
     }
-    uint gtemp=++genomes_downloaded;
-    if(gtemp%100==0){
-		cout<<"genomes ddl: "<<gtemp<<" bases ddl: "<<bases_downloaded<<endl;
+    if(something_to_eat){
+		uint gtemp=++genomes_downloaded;
+		if(gtemp%1000==0){
+			cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
+		}
 	}
+	return something_to_eat;
 }
 
 
@@ -531,15 +536,35 @@ void Index::Download_NCBI_fof(const string& fofncbi,const string& outfile){
 		{
 			getline(in,ref);
 		}
-		vector<uint64_t> hashes(F,-1);
-		Download_NCBI(ref,hashes);
-		#pragma omp critical (out)
-		{
-			out.write(reinterpret_cast<const char*>(&hashes[0]),F*8);
+		if(ref.size()>5){
+			vector<uint64_t> hashes(F,-1);
+			if(Download_NCBI(ref,hashes)){
+				//~ cout<<"yes"<<endl;
+				#pragma omp critical (out)
+				{
+					out.write(reinterpret_cast<const char*>(&hashes[0]),F*8);
+				}
+			}
 		}
 		ref.clear();
 	}
-	cout<<"genomes ddl: "<<genomes_downloaded<<" bases ddl: "<<bases_downloaded<<endl;
+	cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
+}
+
+
+//pretty printing
+string Index::intToString(uint64_t n) {
+	if (n < 1000) {
+		return to_string(n);
+	}
+	string end(to_string(n % 1000));
+	if (end.size() == 3) {
+		return intToString(n / 1000) + "," + end;
+	}
+	if (end.size() == 2) {
+		return intToString(n / 1000) + ",0" + end;
+	}
+	return intToString(n / 1000) + ",00" + end;
 }
 
 

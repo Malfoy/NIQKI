@@ -168,10 +168,11 @@ class Index {
      * \param filename The file to write.
      */
     void toFile(const string &filename);
-    void Download_NCBI(const string& str, vector<uint64_t>& hashes);
+    bool Download_NCBI(const string& str, vector<uint64_t>& hashes);
     
     
     void Download_NCBI_fof(const string& fofncbi,const string& outfile);
+    string intToString(uint64_t n);
 
 
 };
