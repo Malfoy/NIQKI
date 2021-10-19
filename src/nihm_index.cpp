@@ -21,6 +21,9 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
   Buckets=new vector<gid>[fingerprint_range*F];
   offsetUpdatekmer=1;
   offsetUpdatekmer<<=2*K;
+  for(uint32_t i=0; i<mutex_number;++i) {
+    omp_init_lock(&lock[i]);
+  }
 }
 
 
@@ -322,53 +325,55 @@ void Index::insert_file_whole(const string& filestr) {
   vector<uint64_t> kmer_sketch;
   vector<int32_t> sketch(F,-1);
   while(not in.eof()) {
-    {
       getline(in,head);
       getline(in,ref);
-    }
     if(ref.size()>K) {
+      //  cout<<"get compute_sketch_kmer"<<endl;
       compute_sketch_kmer(ref,kmer_sketch);
+      // cout<<"get compute_sketch_kmer END"<<endl;
+    }else{
+      cout<<ref<<endl;
     }
     ref.clear();
   }   
-  //cout<<"get fingerprint"<<endl;
+  // cout<<"get fingerprint"<<endl;
   for(uint i(0);i<F;++i) {
     sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
-  //cout<<"get fingerprintOK"<<endl;
-  insert_sketch(sketch,genome_numbers);;
+  // cout<<"get fingerprintOK"<<endl;
+  insert_sketch(sketch,genome_numbers);
+  // cout<<"Insertion done"<<endl;
   genome_numbers++;
 }
 
 
-  void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
-        zstr::ifstream in(filestr);
-        string ref,head;
-        vector<uint64_t> kmer_sketch;
-        vector<int32_t> sketch(F,-1);
-        while(not in.eof()) {
-			{
-				getline(in,head);
-				getline(in,ref);
-			}
-            if(ref.size()>K) {
-                compute_sketch_kmer(ref,kmer_sketch);
-            }
-            ref.clear();
-        }   
-        // cout<<"get fingerprint"<<endl;
-        for(uint i(0);i<F;++i) {
-            sketch[i]=get_fingerprint(kmer_sketch[i]);
-        }
-        // cout<<"get fingerprintOK"<<endl;
-        insert_sketch(sketch,identifier);
-    }
+void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
+  zstr::ifstream in(filestr);
+  string ref,head;
+  vector<uint64_t> kmer_sketch;
+  vector<int32_t> sketch(F,-1);
+  while(not in.eof()) {
+  getline(in,head);
+  getline(in,ref);
+  if(ref.size()>K) {
+      compute_sketch_kmer(ref,kmer_sketch);
+  }
+  ref.clear();
+  }   
+  // cout<<"get fingerprint"<<endl;
+  for(uint i(0);i<F;++i) {
+      sketch[i]=get_fingerprint(kmer_sketch[i]);
+  }
+  // cout<<"get fingerprintOK"<<endl;
+  insert_sketch(sketch,identifier);
+}
 
 
 
 //HERE all the files of the fof are inserted as a separate entry in the index
     void Index::insert_file_of_file_whole(const string& filestr) {
         ifstream in(filestr);
+        // cout<<"insert_file_of_file_whole GO"<<endl;
         //DEBUG_MSG("File name = '"<<filestr<<"'");
         string ref;
         #pragma omp parallel
@@ -376,13 +381,15 @@ void Index::insert_file_whole(const string& filestr) {
             uint32_t id;
             #pragma omp critical
             {
-			    getline(in,ref);
-                id=genome_numbers;
-                genome_numbers++;
-                //DEBUG_MSG("Genome numbers : "<< genome_numbers);
+              getline(in,ref);
+              id=genome_numbers;
+              genome_numbers++;
+              //DEBUG_MSG("Genome numbers : "<< genome_numbers);
             }
             if(exists_test(ref)) {
-                insert_file_whole(ref,id);
+              // cout<<"insert_file_whole GO"<<endl;
+              insert_file_whole(ref,id);
+              // cout<<"insert_file_whole END"<<endl;
             }
         }
     }
@@ -419,10 +426,14 @@ void Index::query_file_whole(const string& filestr) {
 
 void Index::query_file_of_file_whole(const string& filestr) {
   zstr::ifstream in(filestr);
-  string ref;
-
+  
+  #pragma omp parallel
   while(not in.eof()){
-    getline(in,ref);
+    string ref;
+    #pragma omp critical (input)
+    {
+      getline(in,ref);
+    }
     if(exists_test(ref)){
       query_file_whole(ref);
     }

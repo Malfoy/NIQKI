@@ -173,13 +173,13 @@ ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/config/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' aclocal-1.16
+ACLOCAL = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' autoconf
-AUTOHEADER = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' autoheader
-AUTOMAKE = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' automake-1.16
-AWK = mawk
+AUTOCONF = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' autoconf
+AUTOHEADER = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' autoheader
+AUTOMAKE = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' automake-1.16
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = 
@@ -187,7 +187,7 @@ CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  -g -O0 -fno-inline 
+CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  -O3 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -206,7 +206,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = -lz 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' makeinfo
+MAKEINFO = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' makeinfo
 MKDIR_P = /usr/bin/mkdir -p
 OBJEXT = o
 PACKAGE = nihm
@@ -222,10 +222,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 1.0
-abs_builddir = /home/bilbok/Applications/NIHM/src
-abs_srcdir = /home/bilbok/Applications/NIHM/src
-abs_top_builddir = /home/bilbok/Applications/NIHM
-abs_top_srcdir = /home/bilbok/Applications/NIHM
+abs_builddir = /home/malfoy/devel/index/NIHM/src
+abs_srcdir = /home/malfoy/devel/index/NIHM/src
+abs_top_builddir = /home/malfoy/devel/index/NIHM
+abs_top_srcdir = /home/malfoy/devel/index/NIHM
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
@@ -245,7 +245,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/bilbok/Applications/NIHM/config/install-sh
+install_sh = ${SHELL} /home/malfoy/devel/index/NIHM/config/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -267,7 +267,6 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 common_SOURCES = \
-  common.h \
   zstr.hpp \
   strict_fstream.hpp \
   zstr_make_unique_polyfill.h \

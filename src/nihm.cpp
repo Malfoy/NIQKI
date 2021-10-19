@@ -210,9 +210,9 @@ int main(int argc, char * argv[]){
   cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
   //    Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
   Index monidex(F,K,W,H);
-  cout<<F<<endl;
-  monidex.Download_NCBI_fof("genomic_file","sketches");
-  exit(0);
+  // cout<<F<<endl;
+  // monidex.Download_NCBI_fof("genomic_file","sketches");
+  // exit(0);
   time_point<system_clock> start, endindex,end;
   start = std::chrono::system_clock::now();
 
@@ -227,6 +227,7 @@ int main(int argc, char * argv[]){
     }
     DEBUG_MSG("Opening file : '"<<list_file<<"'");
     monidex.insert_file_of_file_whole(list_file);
+    cout<<"insert_file_of_file_whole"<<endl;
     DEBUG_MSG("File added");
   }
   endindex = std::chrono::system_clock::now();
@@ -244,6 +245,7 @@ int main(int argc, char * argv[]){
     }
     DEBUG_MSG("Opening file...");
     monidex.query_file_of_file_whole(query_file);
+     cout<<"query_file_of_file_whole"<<endl;
     DEBUG_MSG("Query done.");
   }
   end = std::chrono::system_clock::now();
