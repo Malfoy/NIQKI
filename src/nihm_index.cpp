@@ -375,9 +375,9 @@ void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
         ifstream in(filestr);
         // cout<<"insert_file_of_file_whole GO"<<endl;
         //DEBUG_MSG("File name = '"<<filestr<<"'");
-        string ref;
         #pragma omp parallel
         while(not in.eof()) {
+			string ref;
             uint32_t id;
             #pragma omp critical
             {
