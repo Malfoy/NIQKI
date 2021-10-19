@@ -96,16 +96,16 @@ const option::Descriptor usage[] = {
       "\tSet the value of paramter K to the given value.\v"
       "Example:"
       "\v  --kmer 31 or -K 31" },
-  {FETCH,  0, "F" , "Fetch"  ,Arg::Numeric,
-    "  --Fetch, -F <int> "
+  {FETCH,  0, "F" , "fetch"  ,Arg::Numeric,
+    "  --fetch, -F <int> "
       "\tSet the value of paramter F to the given value.\v"
       "Example:"
-      "\v  --Fetch 16 or -F 16" },
-  {WORD,  0, "W" , "Word"  ,Arg::Numeric,
-    "  --Word, -W <int> "
+      "\v  --fetch 16 or -F 16" },
+  {WORD,  0, "W" , "word"  ,Arg::Numeric,
+    "  --word, -W <int> "
       "\tSet the value of paramter W to the given value.\v"
       "Example:"
-      "\v  --Word 10 or -W 10" },
+      "\v  --word 10 or -W 10" },
   {HHL,  0, "H" , "HHL"  ,Arg::Numeric,
     "  --HHL, -H <int> "
       "\tSet the value of paramter H to the given value.\v"
@@ -147,7 +147,8 @@ void deleteOptsArrays() {
 
 
 int main(int argc, char * argv[]){
-  int F=15,K=31,W=10,H=4;
+  int F=0,K=0,W=0,H=0;
+  //int F=15,K=31,W=10,H=4;
   string list_file = "";
   string query_file = "";
   string out_file = "";
@@ -175,26 +176,16 @@ int main(int argc, char * argv[]){
   /***********************************/
   /* Set the k-mer length and Other  */
   /***********************************/
-  if (options[KMER]) {
-    K = atoi(options[KMER].last()->arg);
-    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+  K = options[KMER] ? atoi(options[KMER].last()->arg) : 31;
+    DEBUG_MSG("K = " << K);
+  F = options[FETCH] ? atoi(options[FETCH].last()->arg) : 15;
+    DEBUG_MSG("F = " << F);
+  H = options[HHL] ? atoi(options[HHL].last()->arg) : 4;
+    DEBUG_MSG("H = " << H);
+  W = options[WORD] ? atoi(options[WORD].last()->arg) : 10;
+    DEBUG_MSG("W = " << W);
 
-  }
-  if (options[F]) {
-    F = atoi(options[FETCH].last()->arg);
-    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
-
-
-  }
-  if (options[H]) {
-    H = atoi(options[HHL].last()->arg);
-    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
-  }
-  if (options[W]) {
-    W = atoi(options[WORD].last()->arg);
-    cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
-  }
-
+  DEBUG_MSG("K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W);
   /************************************/
   /* Complain about unknown arguments */
   /************************************/
