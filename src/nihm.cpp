@@ -78,6 +78,8 @@ enum  optionIndex {
   HHL,
   QUERY,
   OUTPUT,
+  DUMP,
+  LOAD,
   LOGO,
   HELP
 };
@@ -121,6 +123,14 @@ const option::Descriptor usage[] = {
   {OUTPUT, 0, "o", "output", Arg::NonEmpty,
     "  --output, -o <filename> "
       "\tDump the current index in text format to the given file."
+  },
+  {DUMP, 0, "d", "dump", Arg::NonEmpty,
+    "  --dump, -d <filename> "
+      "\tDump the current index in binary format to the given file."
+  },
+  {LOAD, 0, "l", "load", Arg::NonEmpty,
+    "  --load, -l <filename> "
+      "\tLoad an index in binary format to the given file."
   },
   {LOGO, 0, "",  "logo", Arg::None,
     "  --logo "
