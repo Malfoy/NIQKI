@@ -26,6 +26,59 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
   for(uint32_t i=0; i<mutex_number;++i) {
     omp_init_lock(&lock[i]);
   }
+  outfile->open("out.txt.gz");
+}
+
+
+
+void Index::dump_index_disk(const string& filestr)const{
+  zstr::ofstream out(filestr);
+
+	// VARIOUS INTEGERS
+	out.write(reinterpret_cast<const char*>(&lF), sizeof(lF));
+  out.write(reinterpret_cast<const char*>(&K), sizeof(K));
+  out.write(reinterpret_cast<const char*>(&H), sizeof(H));
+  out.write(reinterpret_cast<const char*>(&W), sizeof(W));
+  out.write(reinterpret_cast<const char*>(&genome_numbers), sizeof(genome_numbers));
+  for(uint i(0);i<fingerprint_range*F;++i){
+    uint32_t size(Buckets[i].size());
+    out.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    out.write(reinterpret_cast<const char*>(&Buckets[i]), size*sizeof(gid));
+  }
+  for(uint i(0);i<filenames.size();++i){
+    out.write((filenames[i]+'\n').c_str(),filenames[i].size()+1);
+  }
+}
+
+
+
+Index::Index(const string& filestr) {
+  zstr::ifstream in(filestr);
+  in.read(reinterpret_cast< char*>(&lF), sizeof(lF));
+  in.read(reinterpret_cast< char*>(&K), sizeof(K));
+  in.read(reinterpret_cast< char*>(&H), sizeof(H));
+  in.read(reinterpret_cast< char*>(&W), sizeof(W));
+  in.read(reinterpret_cast< char*>(&genome_numbers), sizeof(genome_numbers));
+  F=1<<lF;
+  M=W-H;
+  fingerprint_range=1<<W;
+  mask_M=(1<<M)-1;
+  maximal_remainder=(1<<H)-1;
+  genome_numbers=0;
+  Buckets=new vector<gid>[fingerprint_range*F];
+  offsetUpdatekmer=1;
+  offsetUpdatekmer<<=2*K;
+  for(uint32_t i=0; i<mutex_number;++i) {
+    omp_init_lock(&lock[i]);
+  }
+  for(uint i(0);i<fingerprint_range*F;++i){
+    uint32_t size;
+    in.read(reinterpret_cast< char*>(&size), sizeof(size));
+    if(size!=0){
+      Buckets[i].resize(size);
+      in.read(reinterpret_cast< char*>(&Buckets[i]), size*sizeof(gid));
+    }
+  }
 }
 
 
@@ -215,7 +268,7 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
     // print_bin(hashed);
     // print_bin(sketch[bucket_id]);
     hashed=get_fingerprint(hashed);
-    if(sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
+    if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
       sketch[bucket_id]=hashed;
     }
   }
@@ -236,7 +289,7 @@ void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketc
     kmer canon(min(S_kmer,RC_kmer));
     uint64_t hashed=revhash64(canon);
     uint32_t bucket_id(unrevhash64(canon)>>(64-lF));
-    if(sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
+    if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == (uint64_t)-1) {
       sketch[bucket_id]=hashed;
     }
   }
@@ -246,7 +299,7 @@ void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketc
 
 void Index::insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id) {
     for(uint i(0);i<F;++i) {
-        if(sketch[i]<fingerprint_range and sketch[i]>=0) {
+        if((uint32_t)sketch[i]<fingerprint_range and sketch[i]>=0) {
             omp_set_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
             Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
             omp_unset_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);

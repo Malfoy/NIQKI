@@ -57,8 +57,9 @@ class Index {
     /**
      * \brief Default constructor.
      */
-    Index();
     Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
+    Index(const string& filestr);
+
 
     /**
      * \brief Destructor.
@@ -126,7 +127,7 @@ class Index {
         query_output result;
         unordered_map<gid,uint32_t> counts;
         for(uint i(0);i<F;++i){
-            if(sketch[i]<fingerprint_range and sketch[i]>0){
+            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                     counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                 }
@@ -147,28 +148,28 @@ class Index {
         if(W<=16){
             int16_t counts[genome_numbers];
             for(uint i(0);i<F;++i){
-                if(sketch[i]<fingerprint_range and sketch[i]>0){
+                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
                     for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                         counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                     }
                 }
             }
-            for(int32_t i(0);i<genome_numbers;++i){
-                if(counts[i]>=min_score){
+            for(uint32_t i(0);i<genome_numbers;++i){
+                if((uint32_t)counts[i]>=min_score){
                      result.push_back({counts[i],i});
                 }
             }
         }else{
             int32_t counts[genome_numbers];
             for(uint i(0);i<F;++i){
-                if(sketch[i]<fingerprint_range and sketch[i]>0){
+                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
                     for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                         counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                     }
                 }
             }
-            for(int32_t i(0);i<genome_numbers;++i){
-                if(counts[i]>=min_score){
+            for(uint32_t i(0);i<genome_numbers;++i){
+                if((uint32_t)counts[i]>=min_score){
                      result.push_back({counts[i],i});
                 }
             }
@@ -246,6 +247,9 @@ class Index {
     void Biogetline(zstr::ifstream* in,string& result,char type,string& header)const ;
 
     char get_data_type(const string& filename)const;
+
+    void dump_index_disk(const string& filestr)const ;
+
 
 };
 
