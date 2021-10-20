@@ -55,8 +55,9 @@ class Index {
     /**
      * \brief Default constructor.
      */
-    Index();
     Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
+    Index(const string& filestr);
+
 
     /**
      * \brief Destructor.
@@ -224,6 +225,9 @@ class Index {
     void Biogetline(zstr::ifstream* in,string& result,char type,string& header)const ;
 
     char get_data_type(const string& filename)const;
+
+    void dump_index_disk(const string& filestr)const ;
+
 
 };
 
