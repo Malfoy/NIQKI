@@ -415,9 +415,9 @@ void Index::query_file_of_file_whole(const string& filestr,const uint min_score)
 
 
 void pVector(std::vector <gid> const &a) {
-   std::cout << "The vector elements are : ";
-   for(int i=0; i < a.size(); i++)
-   std::cout << a.at(i) << ' ';
+   std::cout << "The vector elements are : "<< endl;
+   for(gid i=0; i < a.size(); i++)
+   std::cout << a.at(i) << ' '<<endl;
 }
 
 
