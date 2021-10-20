@@ -29,6 +29,7 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
 }
 
 
+
 void Index::dump_index_disk(const string& filestr)const{
   zstr::ofstream out(filestr);
 
@@ -266,7 +267,7 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
     // print_bin(hashed);
     // print_bin(sketch[bucket_id]);
     hashed=get_fingerprint(hashed);
-    if(sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
+    if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
       sketch[bucket_id]=hashed;
     }
   }
@@ -287,7 +288,7 @@ void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketc
     kmer canon(min(S_kmer,RC_kmer));
     uint64_t hashed=revhash64(canon);
     uint32_t bucket_id(unrevhash64(canon)>>(64-lF));
-    if(sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
+    if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == (uint64_t)-1) {
       sketch[bucket_id]=hashed;
     }
   }
@@ -297,7 +298,7 @@ void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketc
 
 void Index::insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id) {
     for(uint i(0);i<F;++i) {
-        if(sketch[i]<fingerprint_range and sketch[i]>=0) {
+        if((uint32_t)sketch[i]<fingerprint_range and sketch[i]>=0) {
             omp_set_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
             Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
             omp_unset_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
