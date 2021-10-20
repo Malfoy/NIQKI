@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <omp.h>
+#include "zstr.hpp"
 
 
 
@@ -46,6 +47,8 @@ class Index {
     uint32_t genome_numbers;//Number of genomes
     vector<gid>* Buckets;
     omp_lock_t lock[mutex_number];
+    vector<string> filenames;
+    zstr::ofstream* outfile;
 
 
 
@@ -164,7 +167,7 @@ class Index {
 
 
 
-    inline query_output query_sequence(const string& str,double fraction)const {
+    inline query_output query_sequence_frac(const string& str,double fraction)const {
         return query_sequence(str,F*fraction);
     }
 
@@ -175,14 +178,18 @@ class Index {
     //TODO HANDLE FASTQ multiFASTA
     void insert_file_lines(const string& filestr);
 
-    void query_file_lines(const string& filestr);
+    void query_file_lines(const string& filestr, const int min_score=1)const;
 
-    void merge_sketch( vector<int32_t>& sketch1,const vector<int32_t>& sketch2);
 
-    inline bool exists_test (const std::string& name) {
+    void merge_sketch( vector<int32_t>& sketch1,const vector<int32_t>& sketch2)const;
+
+    inline bool exists_test (const std::string& name)const {
       struct stat buffer;
       return (stat (name.c_str(), &buffer) == 0);
     }
+
+
+    void output_query(const query_output& toprint,const string& queryname)const;
 
 
 
@@ -195,9 +202,9 @@ class Index {
     void insert_file_of_file_whole(const string& filestr);
 
     //HERE all the kmer of the file are put in a single sketch and Queried
-    void query_file_whole(const string& filestr);
+    void query_file_whole(const string& filestr,const uint min_score=1);
 
-    void query_file_of_file_whole(const string& filestr);
+    void query_file_of_file_whole(const string& filestr,const uint min_score=1);
 
      /**
      * \brief Write the Index object into the given file.
@@ -209,8 +216,14 @@ class Index {
     
     
     void Download_NCBI_fof(const string& fofncbi,const string& outfile);
+
     string intToString(uint64_t n);
 
+    void Biogetline(zstr::ifstream* in,string& result,char type)const;
+
+    void Biogetline(zstr::ifstream* in,string& result,char type,string& header)const ;
+
+    char get_data_type(const string& filename)const;
 
 };
 
