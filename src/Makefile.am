@@ -1,9 +1,11 @@
 bin_PROGRAMS = nihm
 
 common_SOURCES = \
+  common.h \
   zstr.hpp \
   strict_fstream.hpp \
   zstr_make_unique_polyfill.h \
+  genome.h genome.cpp \
   nihm_index.h nihm_index.cpp
 
 nihm_SOURCES = \

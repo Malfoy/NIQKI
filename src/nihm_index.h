@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <omp.h>
 #include "zstr.hpp"
+#include "genome.h"
 
 
 
@@ -49,6 +50,7 @@ class Index {
     omp_lock_t lock[mutex_number];
     vector<string> filenames;
     zstr::ofstream* outfile;
+    std::vector<Genome> infos;   // Array containing all Genomes informations.
 
 
 
@@ -100,6 +102,25 @@ class Index {
         }
         cout<<"\n";
     }
+    /**
+     * \brief Returns the informations about the genome number i (starting from 0).
+     *
+     * Be aware that there is no bound verification.
+     *
+     * \return Returns the informations about the genome number i (starting from 0).
+     */
+    inline const Genome &operator[](size_t i) const {
+      return infos[i];
+    }
+    /**
+     * \brief Returns the number of indexed genomes.
+     *
+     * \return Returns the number of indexed genomes.
+     */
+    inline size_t getNbGenomes() const {
+      return infos.size();
+    }
+
 
     inline query_output query_sketchold(const vector<int32_t>& sketch,uint32_t min_score=1)const {
         query_output result;

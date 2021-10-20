@@ -99,7 +99,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__objects_1 = nihm_index.$(OBJEXT)
+am__objects_1 = genome.$(OBJEXT) nihm_index.$(OBJEXT)
 am_nihm_OBJECTS = $(am__objects_1) nihm.$(OBJEXT)
 nihm_OBJECTS = $(am_nihm_OBJECTS)
 nihm_LDADD = $(LDADD)
@@ -118,7 +118,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I. -I$(top_builddir)/config
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/nihm.Po ./$(DEPDIR)/nihm_index.Po
+am__depfiles_remade = ./$(DEPDIR)/genome.Po ./$(DEPDIR)/nihm.Po \
+	./$(DEPDIR)/nihm_index.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -173,13 +174,13 @@ ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/config/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' aclocal-1.16
+ACLOCAL = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' autoconf
-AUTOHEADER = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' autoheader
-AUTOMAKE = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' automake-1.16
-AWK = gawk
+AUTOCONF = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' autoconf
+AUTOHEADER = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' autoheader
+AUTOMAKE = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' automake-1.16
+AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = 
@@ -187,7 +188,7 @@ CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  -O3 
+CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  -g -O0 -fno-inline 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -206,7 +207,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = -lz 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} '/home/malfoy/devel/index/NIHM/config/missing' makeinfo
+MAKEINFO = ${SHELL} '/home/bilbok/Applications/NIHM/config/missing' makeinfo
 MKDIR_P = /usr/bin/mkdir -p
 OBJEXT = o
 PACKAGE = nihm
@@ -222,10 +223,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 1.0
-abs_builddir = /home/malfoy/devel/index/NIHM/src
-abs_srcdir = /home/malfoy/devel/index/NIHM/src
-abs_top_builddir = /home/malfoy/devel/index/NIHM
-abs_top_srcdir = /home/malfoy/devel/index/NIHM
+abs_builddir = /home/bilbok/Applications/NIHM/src
+abs_srcdir = /home/bilbok/Applications/NIHM/src
+abs_top_builddir = /home/bilbok/Applications/NIHM
+abs_top_srcdir = /home/bilbok/Applications/NIHM
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
@@ -245,7 +246,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/malfoy/devel/index/NIHM/config/install-sh
+install_sh = ${SHELL} /home/bilbok/Applications/NIHM/config/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -267,9 +268,11 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 common_SOURCES = \
+  common.h \
   zstr.hpp \
   strict_fstream.hpp \
   zstr_make_unique_polyfill.h \
+  genome.h genome.cpp \
   nihm_index.h nihm_index.cpp
 
 nihm_SOURCES = \
@@ -367,6 +370,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+include ./$(DEPDIR)/genome.Po # am--include-marker
 include ./$(DEPDIR)/nihm.Po # am--include-marker
 include ./$(DEPDIR)/nihm_index.Po # am--include-marker
 
@@ -521,7 +525,8 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/nihm.Po
+		-rm -f ./$(DEPDIR)/genome.Po
+	-rm -f ./$(DEPDIR)/nihm.Po
 	-rm -f ./$(DEPDIR)/nihm_index.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -568,7 +573,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/nihm.Po
+		-rm -f ./$(DEPDIR)/genome.Po
+	-rm -f ./$(DEPDIR)/nihm.Po
 	-rm -f ./$(DEPDIR)/nihm_index.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

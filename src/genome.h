@@ -41,6 +41,6 @@
     std::string name;  //genome name
     std::string index_file; // if load from index file
 
-}
+};
 
 #endif
