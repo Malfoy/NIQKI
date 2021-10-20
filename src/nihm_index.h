@@ -199,6 +199,7 @@ class Index {
 
     void query_file_of_file_whole(const string& filestr);
 
+
      /**
      * \brief Write the Index object into the given file.
      *

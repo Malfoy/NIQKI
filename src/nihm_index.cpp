@@ -441,16 +441,28 @@ void Index::query_file_of_file_whole(const string& filestr) {
 }
 
 
+void pVector(std::vector <gid> const &a) {
+   std::cout << "The vector elements are : ";
+   for(int i=0; i < a.size(); i++)
+   std::cout << a.at(i) << ' ';
+}
+
+
 
 void Index::toFile(const string &filename){
   //long totalSize;
-  DEBUG_MSG("Creating'" << filename << "'");
+  //DEBUG_MSG("Creating'" << filename << "'");
   ofstream outfile(filename);
   stringstream buffer;
-  buffer << "### Index informations" << endl;
+  DEBUG_MSG("Index informations : " << endl
+                << "- " << genome_numbers << " Indexed Genomes" << endl
+                << "- " << Index::Buckets << " Buckets SIZE");
+
+  pVector(*Buckets);
+  //buffer << "### Index informations" << endl;
   //char* buffer = new char[totalSize];
   // write to outfile
-  DEBUG_MSG("Adding '" << buffer.str() << "' (" << buffer.str().length() << ")");
+  //DEBUG_MSG("Adding '" << buffer.str() << "' (" << buffer.str().length() << ")");
   buffer.str("");
   outfile.write(buffer.str().c_str(), buffer.str().length());
   // release dynamically-allocated memory
