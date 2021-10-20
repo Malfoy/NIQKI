@@ -26,6 +26,7 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
   for(uint32_t i=0; i<mutex_number;++i) {
     omp_init_lock(&lock[i]);
   }
+  outfile->open("out.txt.gz");
 }
 
 
