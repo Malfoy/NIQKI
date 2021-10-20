@@ -207,6 +207,7 @@ class Index {
 
     void query_file_of_file_whole(const string& filestr,const uint min_score=1);
 
+
      /**
      * \brief Write the Index object into the given file.
      *
