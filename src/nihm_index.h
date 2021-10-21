@@ -45,6 +45,7 @@ class Index {
     uint64_t expected_gemome_size;
     uint64_t offsetUpdatekmer;
     //VARIABLE
+    string filename;
     uint32_t genome_numbers;//Number of genomes
     vector<gid>* Buckets;
     omp_lock_t lock[mutex_number];
@@ -57,7 +58,7 @@ class Index {
     /**
      * \brief Default constructor.
      */
-    Index(uint32_t F, uint32_t K, uint32_t W, uint32_t H);
+    Index(uint32_t F, uint32_t K, uint32_t W, uint32_t H, string filename);
     Index(const string& filestr);
 
 
@@ -169,7 +170,7 @@ class Index {
     //HERE all the kmer of the file are put in a single sketch and Queried
     void query_file_whole(const string& filestr,const uint min_score=1);
     
-    void query_to_file_whole(const string& filestr,const uint min_score=1);
+    void query_file_whole_matrix(const string& filestr,const uint min_score=1);
 
     void query_file_of_file_whole(const string& filestr,const uint min_score=1);
 
