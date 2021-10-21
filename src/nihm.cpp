@@ -281,9 +281,7 @@ int main(int argc, char * argv[]){
     if (!ifs) {
       cout << "Unable to open the file '" << matrix_file << "'" << endl;
     }
-    DEBUG_MSG("Opening file...");
     monindex.query_file_of_file_whole_matrix(matrix_file);
-    DEBUG_MSG("Query done.");
   }
 
 
