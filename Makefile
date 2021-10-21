@@ -216,7 +216,7 @@ CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  -g -O0 -fno-inline 
+CXXFLAGS = -Wall -std=c++11 -pedantic -funroll-loops -lz -fopenmp  -O3 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps

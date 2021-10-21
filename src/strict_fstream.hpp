@@ -233,4 +233,4 @@ public:
     }
 }; // class fstream
 
-}; // namespace strict_fstream
+}// namespace strict_fstream

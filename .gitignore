@@ -23,6 +23,7 @@ src/.deps/*
 src/.libs/*
 src/nihm
 
+*.gz
 *.Po
 *.Tpo
 *.swp

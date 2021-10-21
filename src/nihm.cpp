@@ -29,7 +29,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <bitset>
-
+#include <iomanip> // std::setw
 #include <zlib.h>
 
 using namespace std;
@@ -186,13 +186,13 @@ int main(int argc, char * argv[]){
   /* Set the k-mer length and Other  */
   /***********************************/
   K = options[KMER] ? atoi(options[KMER].last()->arg) : 31;
-    DEBUG_MSG("K = " << K);
+  DEBUG_MSG("K = " << K);
   F = options[FETCH] ? atoi(options[FETCH].last()->arg) : 16;
-    DEBUG_MSG("F = " << F);
+  DEBUG_MSG("F = " << F);
   H = options[HHL] ? atoi(options[HHL].last()->arg) : 4;
-    DEBUG_MSG("H = " << H);
+  DEBUG_MSG("H = " << H);
   W = options[WORD] ? atoi(options[WORD].last()->arg) : 10;
-    DEBUG_MSG("W = " << W);
+  DEBUG_MSG("W = " << W);
 
   DEBUG_MSG("K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W);
   /************************************/
@@ -207,10 +207,12 @@ int main(int argc, char * argv[]){
     return EXIT_FAILURE;
   }
 
-  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
-  Index monidex(F,K,W,H);
+  cout << "+-------------------------------------------------------------------+" << endl;
+  cout << "|                            Informations                           |" << endl;
+  cout << "+-----------------------------------+-------------------------------+" << endl;
+  Index monindex(F,K,W,H);
   // cout<<F<<endl;
-  // monidex.Download_NCBI_fof("genomic_file","sketches");
+  // monindex.Download_NCBI_fof("genomic_file","sketches");
   // exit(0);
   time_point<system_clock> start, endindex,end;
   start = std::chrono::system_clock::now();
@@ -225,13 +227,13 @@ int main(int argc, char * argv[]){
       cout << "Unable to open the file '" << list_file << "'" << endl;
     }
     DEBUG_MSG("Opening file : '"<<list_file<<"'");
-    monidex.insert_file_of_file_whole(list_file);
-    cout<<"insert_file_of_file_whole"<<endl;
+    monindex.insert_file_of_file_whole(list_file);
+    //cout<<"insert_file_of_file_whole"<<endl;
     DEBUG_MSG("File added");
   }
   endindex = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = endindex - start;
-  std::cout << "Indexing lasted " << elapsed_seconds.count() << "s\n";
+  cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
 
   /*****************************************/
   /* Add the query file and do the request */
@@ -243,22 +245,22 @@ int main(int argc, char * argv[]){
       cout << "Unable to open the file '" << query_file << "'" << endl;
     }
     DEBUG_MSG("Opening file...");
-    monidex.query_file_of_file_whole(query_file);
-     cout<<"query_file_of_file_whole"<<endl;
+    monindex.query_file_of_file_whole(query_file);
+    //cout<<"query_file_of_file_whole"<<endl;
     DEBUG_MSG("Query done.");
   }
   end = std::chrono::system_clock::now();
   elapsed_seconds = end - endindex;
-  cout << "Query lasted " << elapsed_seconds.count() << "s\n";
+  cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
   elapsed_seconds = end - start;
-  cout<<"whole run tool took " << elapsed_seconds.count() << endl;
+  cout << "| Whole run lasted (s)              |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
 
 
-    if (options[OUTPUT]) {
-      out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput";
-      DEBUG_MSG("Output file name = " << out_file);
-      monidex.toFile(out_file);
-    }
+  if (options[OUTPUT]) {
+    out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput";
+    DEBUG_MSG("Output file name = " << out_file);
+    monindex.query_to_file_whole(out_file);
+  }
 
   /**********************************************/
   /* Display the ASCII art logo of the program. */
@@ -277,7 +279,13 @@ int main(int argc, char * argv[]){
     else cout << "Unable to open file :'"<<logo_name<<"'"<<endl;
     return EXIT_SUCCESS;
   }
-
+  cout << "+-----------------------------------+-------------------------------+" << endl;
+  cout << "| k-mer size                        |" << setw(30) << setfill(' ') << K << " |" << endl
+       << "| F                                 |" << setw(30) << setfill(' ') << F << " |" << endl
+       << "| H                                 |" << setw(30) << setfill(' ') << H << " |" << endl
+       << "| W                                 |" << setw(30) << setfill(' ') << W << " |" << endl
+       << "| Number of indexed genomes         |" << setw(30) << setfill(' ') << monindex.getNbGenomes() << " |" << endl;
+  cout << "+-----------------------------------+-------------------------------+" << endl;
 
   return EXIT_SUCCESS;
 }

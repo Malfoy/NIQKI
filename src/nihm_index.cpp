@@ -6,7 +6,7 @@
 
 
 using namespace std;
-
+const int bufferSize = 10000;
 
 
 Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
@@ -248,10 +248,10 @@ uint64_t Index::revhash64 ( uint64_t x ) const {
 
 
 uint64_t unrevhash64(uint64_t x) {
-	x = ((x >> 32) ^ x) * 0xCFEE444D8B59A89B;
-	x = ((x >> 32) ^ x) * 0xCFEE444D8B59A89B;
-	x = ((x >> 32) ^ x);
-	return x;
+  x = ((x >> 32) ^ x) * 0xCFEE444D8B59A89B;
+  x = ((x >> 32) ^ x) * 0xCFEE444D8B59A89B;
+  x = ((x >> 32) ^ x);
+  return x;
 }
 
 
@@ -304,13 +304,13 @@ void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketc
 
 
 void Index::insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id) {
-    for(uint i(0);i<F;++i) {
-        if((uint32_t)sketch[i]<fingerprint_range and sketch[i]>=0) {
-            omp_set_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
-            Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
-            omp_unset_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
-        }
+  for(uint i(0);i<F;++i) {
+    if((uint32_t)sketch[i]<fingerprint_range and sketch[i]>=0) {
+      omp_set_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
+      Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
+      omp_unset_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
     }
+  }
 }
 
 
@@ -404,7 +404,7 @@ void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
     ref.clear();
   }   
   for(uint i(0);i<F;++i) {
-      sketch[i]=get_fingerprint(kmer_sketch[i]);
+    sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
   insert_sketch(sketch,identifier);
 }
@@ -414,7 +414,7 @@ void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
 //HERE all the files of the fof are inserted as a separate entry in the index
 void Index::insert_file_of_file_whole(const string& filestr) {
   ifstream in(filestr);
-  #pragma omp parallel
+#pragma omp parallel
   while(not in.eof()) {
     string ref;
     uint32_t id;
@@ -464,13 +464,50 @@ void Index::query_file_whole(const string& filestr,const uint min_score) {
 }
 
 
+void Index::query_to_file_whole(const string& filename,const uint min_score) {
+  char type=get_data_type(filename);
+  zstr::ifstream in;
+  DEBUG_MSG("Open filname: "<<filename);
+  in.open(filename);
+  if(!in) {
+        cout<<"ERROR! FILE COULD NOT BE OPEN "<<endl;
+        return;
+  }
+  string ref;
+  vector<uint64_t> kmer_sketch;
+  vector<int32_t> sketch(F,-1);
+  DEBUG_MSG("Begin biogetline with type= "<<type);
+  while(not in.eof()){
+    DEBUG_MSG("Begin biogetline");
+    Biogetline(&in,ref,type);
+    DEBUG_MSG("Done biogetline");
+    if(ref.size()>K){
+      DEBUG_MSG("ref size = "<<ref.size());
+      compute_sketch_kmer(ref,kmer_sketch);
+    }
+  }
+  DEBUG_MSG("While done");
+  DEBUG_MSG("Start for loop : F="<<F);
+  for(uint i(0);i<F;++i) {
+    DEBUG_MSG("Starting for loop");
+    DEBUG_MSG("Start get fingerprint : sketch["<<i<<"] = "<<get_fingerprint(kmer_sketch[i]));
+    sketch[i]=get_fingerprint(kmer_sketch[i]);
+    DEBUG_MSG("Ending for loop");
+  }
+  DEBUG_MSG("Query_sketch.");
+  auto out(query_sketch(sketch,min_score));
+  DEBUG_MSG("Output matrix.");
+  output_matrix(out,filename);
+}
+
+
 
 void Index::query_file_of_file_whole(const string& filestr,const uint min_score) {
   zstr::ifstream in(filestr);
-  #pragma omp parallel
+#pragma omp parallel
   while(not in.eof()){
     string ref;
-    #pragma omp critical (input)
+#pragma omp critical (input)
     {
       getline(in,ref);
     }
@@ -483,29 +520,38 @@ void Index::query_file_of_file_whole(const string& filestr,const uint min_score)
 
 
 void pVector(std::vector <gid> const &a) {
-   std::cout << "The vector elements are : "<< endl;
-   for(gid i=0; i < a.size(); i++)
-   std::cout << a.at(i) << ' '<<endl;
+  std::cout << "The vector elements are : "<< endl;
+  for(gid i=0; i < a.size(); i++)
+    std::cout << a.at(i) << ' '<<endl;
 }
 
 
 
 void Index::toFile(const string &filename){
-  //long totalSize;
-  //DEBUG_MSG("Creating'" << filename << "'");
   ofstream outfile(filename);
   stringstream buffer;
-  DEBUG_MSG("Index informations : " << endl
-                << "- " << genome_numbers << " Indexed Genomes" << endl
-                << "- " << Index::Buckets << " Buckets SIZE");
+  while(not buffer.eof()){
+    string ref;
+#pragma omp critical (input)
+    {
+      getline(buffer,ref);
+    }
+    if(exists_test(ref)){
+      query_to_file_whole(ref);
+    }
+  }
+  cout << "In toFile function" << endl;
+  buffer << "### Genomes names: ";
 
-  pVector(*Buckets);
-  //buffer << "### Index informations" << endl;
   //char* buffer = new char[totalSize];
   // write to outfile
   //DEBUG_MSG("Adding '" << buffer.str() << "' (" << buffer.str().length() << ")");
   buffer.str("");
   outfile.write(buffer.str().c_str(), buffer.str().length());
+  //cout << "Add to buffer : " << buffer.str().c_str() <<" : " << buffer.str().length() << endl;
+  //outfile.write(ref.c_str(), ref.str().length());
+  //cout << "Add to buffer : " << ref.c_str() <<" : " << ref.str().length() << endl;
+
   // release dynamically-allocated memory
   //delete[] buffer;
   outfile.close();
@@ -580,120 +626,132 @@ query_output Index::query_sequence(const string& str,uint32_t min_score)const {
 }
 
 
+void Index::output_matrix(const query_output& toprint,const string& queryname)const{
+#pragma omp critical (outputfile)
+  {
+    *outfile<<queryname<<"\t";
+    for(uint i(0);i<toprint.size();++i){
+      *outfile<<toprint[i].second<<" "<<toprint[i].first<<'\n';
+    }
+  }
+}
+
+
+
 atomic<uint32_t> genomes_downloaded(0);
 atomic<uint64_t> bases_downloaded(0);
 
 
 
 string get_output_exec_cmd(const char* cmd) {
-    array<char, 1024*1024> buffer;
-    string result;
-    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-		
-        result += buffer.data();
-    }
-    return result;
+  array<char, 1024*1024> buffer;
+  string result;
+  unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+  if (!pipe) {
+    throw std::runtime_error("popen() failed!");
+  }
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+
+    result += buffer.data();
+  }
+  return result;
 }
 
 
 
 string get_name_ncbi(const string& str){
-	uint lastposition(0);
-	for(uint i(0);i<str.size()-3;++i){
-		if(str[i]=='/'){
-			lastposition=i;
-		}
-	}
-	lastposition++;
-	return str.substr(lastposition,str.size()-lastposition);
+  uint lastposition(0);
+  for(uint i(0);i<str.size()-3;++i){
+    if(str[i]=='/'){
+      lastposition=i;
+    }
+  }
+  lastposition++;
+  return str.substr(lastposition,str.size()-lastposition);
 }
 
 
 
 bool Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
-	string cmd("wget -qO - "+str+"/"+get_name_ncbi(str)+"_genomic.fna.gz | gzip -d -c -");
-	//~ cout<<cmd<<endl;
-	array<char, 1024*1024> buffer;
-    string result;
-    string sequence;
-    bool something_to_eat(false);
-    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe) {
-        return false;
+  string cmd("wget -qO - "+str+"/"+get_name_ncbi(str)+"_genomic.fna.gz | gzip -d -c -");
+  //~ cout<<cmd<<endl;
+  array<char, 1024*1024> buffer;
+  string result;
+  string sequence;
+  bool something_to_eat(false);
+  unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+  if (!pipe) {
+    return false;
+  }
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    result= buffer.data();
+    if(result[0]!='>'){
+      if(result[result.size()-1]=='\n'){
+        sequence+=result.substr(0,result.size()-1);
+      }else{
+        sequence+=result;
+      }
+    }else{
+      if(sequence.size()>K){
+        something_to_eat=true;
+        compute_sketch_kmer(sequence,hashes);
+        bases_downloaded+=sequence.size();
+        sequence.clear();
+      }
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result= buffer.data();
-        if(result[0]!='>'){
-			if(result[result.size()-1]=='\n'){
-				sequence+=result.substr(0,result.size()-1);
-			}else{
-				sequence+=result;
-			}
-		}else{
-			if(sequence.size()>K){
-				something_to_eat=true;
-				compute_sketch_kmer(sequence,hashes);
-				bases_downloaded+=sequence.size();
-				sequence.clear();
-			}
-		}
-		result.clear();
+    result.clear();
+  }
+  if(something_to_eat){
+    uint gtemp=++genomes_downloaded;
+    if(gtemp%1000==0){
+      cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
     }
-    if(something_to_eat){
-		uint gtemp=++genomes_downloaded;
-		if(gtemp%1000==0){
-			cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
-		}
-	}
-	return something_to_eat;
+  }
+  return something_to_eat;
 }
 
 
 
 //Hacky function to download genome from ncbi
 void Index::Download_NCBI_fof(const string& fofncbi,const string& outfile){
-	cout<<"go ncbi"<<endl;
-	zstr::ifstream in(fofncbi);
-	ofstream out(outfile);
-	#pragma omp parallel
-	while(not in.eof()){
-		string ref;
-		#pragma omp critical (in)
-		{
-			getline(in,ref);
-		}
-		if(ref.size()>5){
-			vector<uint64_t> hashes(F,-1);
-			if(Download_NCBI(ref,hashes)){
-				#pragma omp critical (out)
-				{
-					out.write(reinterpret_cast<const char*>(&hashes[0]),F*8);
-				}
-			}
-		}
-		ref.clear();
-	}
-	cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
+  cout<<"go ncbi"<<endl;
+  zstr::ifstream in(fofncbi);
+  ofstream out(outfile);
+#pragma omp parallel
+  while(not in.eof()){
+    string ref;
+#pragma omp critical (in)
+    {
+      getline(in,ref);
+    }
+    if(ref.size()>5){
+      vector<uint64_t> hashes(F,-1);
+      if(Download_NCBI(ref,hashes)){
+#pragma omp critical (out)
+        {
+          out.write(reinterpret_cast<const char*>(&hashes[0]),F*8);
+        }
+      }
+    }
+    ref.clear();
+  }
+  cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
 }
 
 
 //pretty printing
 string Index::intToString(uint64_t n) {
-	if (n < 1000) {
-		return to_string(n);
-	}
-	string end(to_string(n % 1000));
-	if (end.size() == 3) {
-		return intToString(n / 1000) + "," + end;
-	}
-	if (end.size() == 2) {
-		return intToString(n / 1000) + ",0" + end;
-	}
-	return intToString(n / 1000) + ",00" + end;
+  if (n < 1000) {
+    return to_string(n);
+  }
+  string end(to_string(n % 1000));
+  if (end.size() == 3) {
+    return intToString(n / 1000) + "," + end;
+  }
+  if (end.size() == 2) {
+    return intToString(n / 1000) + ",0" + end;
+  }
+  return intToString(n / 1000) + ",00" + end;
 }
 
 

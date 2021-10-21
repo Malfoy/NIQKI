@@ -94,14 +94,14 @@ class Index {
     void insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id);
 
     inline void print_bin(uint64_t n,uint bits_to_print=64) const{
-        uint64_t mask=1;
-        mask<<=bits_to_print-1;
-        for(uint i(0);i<bits_to_print;++i){
-            cout<<n/mask;
-            if(n/mask==1){n-=mask;}
-            mask>>=1;
-        }
-        cout<<"\n";
+      uint64_t mask=1;
+      mask<<=bits_to_print-1;
+      for(uint i(0);i<bits_to_print;++i){
+        cout<<n/mask;
+        if(n/mask==1){n-=mask;}
+        mask>>=1;
+      }
+      cout<<"\n";
     }
     /**
      * \brief Returns the informations about the genome number i (starting from 0).
@@ -119,7 +119,7 @@ class Index {
      * \return Returns the number of indexed genomes.
      */
     inline size_t getNbGenomes() const {
-      return infos.size();
+      return genome_numbers;
     }
 
 
@@ -156,7 +156,7 @@ class Index {
 
     void output_query(const query_output& toprint,const string& queryname)const;
 
-
+    void output_matrix(const query_output& toprint,const string& queryname)const;
 
     //HERE all the kmer of the file are put in a single sketch and inserted
     void insert_file_whole(const string& filestr);
@@ -168,19 +168,15 @@ class Index {
 
     //HERE all the kmer of the file are put in a single sketch and Queried
     void query_file_whole(const string& filestr,const uint min_score=1);
+    
+    void query_to_file_whole(const string& filestr,const uint min_score=1);
 
     void query_file_of_file_whole(const string& filestr,const uint min_score=1);
 
-
-     /**
-     * \brief Write the Index object into the given file.
-     *
-     * \param filename The file to write.
-     */
     void toFile(const string &filename);
+    
     bool Download_NCBI(const string& str, vector<uint64_t>& hashes);
-    
-    
+
     void Download_NCBI_fof(const string& fofncbi,const string& outfile);
 
     string intToString(uint64_t n);

@@ -491,4 +491,4 @@ public:
     }
 }; // class ofstream
 
-}; // namespace zstr
+} // namespace zstr
