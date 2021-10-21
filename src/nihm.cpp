@@ -259,7 +259,7 @@ int main(int argc, char * argv[]){
   if (options[OUTPUT]) {
     out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput";
     DEBUG_MSG("Output file name = " << out_file);
-    monindex.toFile(out_file);
+    monindex.query_to_file_whole(out_file);
   }
 
   /**********************************************/

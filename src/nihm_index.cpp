@@ -6,7 +6,7 @@
 
 
 using namespace std;
-
+const int bufferSize = 10000;
 
 
 Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
@@ -449,24 +449,40 @@ void Index::query_file_whole(const string& filestr,const uint min_score) {
 }
 
 
-void Index::query_to_file_whole(const string& filestr,const uint min_score) {
-  char type=get_data_type(filestr);
-  zstr::ifstream in(filestr);
+void Index::query_to_file_whole(const string& filename,const uint min_score) {
+  char type=get_data_type(filename);
+  zstr::ifstream in;
+  DEBUG_MSG("Open filname: "<<filename);
+  in.open(filename);
+  if(!in) {
+        cout<<"ERROR! FILE COULD NOT BE OPEN "<<endl;
+        return;
+  }
   string ref;
   vector<uint64_t> kmer_sketch;
   vector<int32_t> sketch(F,-1);
+  DEBUG_MSG("Begin biogetline with type= "<<type);
   while(not in.eof()){
+    DEBUG_MSG("Begin biogetline");
     Biogetline(&in,ref,type);
+    DEBUG_MSG("Done biogetline");
     if(ref.size()>K){
+      DEBUG_MSG("ref size = "<<ref.size());
       compute_sketch_kmer(ref,kmer_sketch);
     }
-
-  }   
-  for(uint i(0);i<F;++i) {
-    sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
+  DEBUG_MSG("While done");
+  DEBUG_MSG("Start for loop : F="<<F);
+  for(uint i(0);i<F;++i) {
+    DEBUG_MSG("Starting for loop");
+    DEBUG_MSG("Start get fingerprint : sketch["<<i<<"] = "<<get_fingerprint(kmer_sketch[i]));
+    sketch[i]=get_fingerprint(kmer_sketch[i]);
+    DEBUG_MSG("Ending for loop");
+  }
+  DEBUG_MSG("Query_sketch.");
   auto out(query_sketch(sketch,min_score));
-  output_matrix(out,filestr);
+  DEBUG_MSG("Output matrix.");
+  output_matrix(out,filename);
 }
 
 
@@ -509,7 +525,7 @@ void Index::toFile(const string &filename){
       query_to_file_whole(ref);
     }
   }
-  cout << "COUCOU" << endl;
+  cout << "In toFile function" << endl;
   buffer << "### Genomes names: ";
 
   //char* buffer = new char[totalSize];
@@ -517,6 +533,10 @@ void Index::toFile(const string &filename){
   //DEBUG_MSG("Adding '" << buffer.str() << "' (" << buffer.str().length() << ")");
   buffer.str("");
   outfile.write(buffer.str().c_str(), buffer.str().length());
+  //cout << "Add to buffer : " << buffer.str().c_str() <<" : " << buffer.str().length() << endl;
+  //outfile.write(ref.c_str(), ref.str().length());
+  //cout << "Add to buffer : " << ref.c_str() <<" : " << ref.str().length() << endl;
+
   // release dynamically-allocated memory
   //delete[] buffer;
   outfile.close();
@@ -540,11 +560,7 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 void Index::output_matrix(const query_output& toprint,const string& queryname)const{
 #pragma omp critical (outputfile)
   {
-    cout << "OUTPUT MATRIX : 543" <<endl;
-    for(uint i(0);i<toprint.size();++i){
-      *outfile<<queryname<<"\t";
-    }
-    *outfile<<toprint.size()<<"\n";
+    *outfile<<queryname<<"\t";
     for(uint i(0);i<toprint.size();++i){
       *outfile<<toprint[i].second<<" "<<toprint[i].first<<'\n';
     }
