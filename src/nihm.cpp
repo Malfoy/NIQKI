@@ -281,9 +281,9 @@ int main(int argc, char * argv[]){
     cout << "|                            Informations                           |" << endl;
     cout << "+-----------------------------------+-------------------------------+" << endl;
     cout << "| k-mer size                        |" << setw(30) << setfill(' ') << K << " |" << endl
-      << "| F                                    |" << setw(30) << setfill(' ') << F << " |" << endl
-      << "| H                                    |" << setw(30) << setfill(' ') << H << " |" << endl
-      << "| Number of indexed genomes            |" << setw(30) << setfill(' ') << monindex.getNbGenomes() << " |" << endl;
+         << "| F                                 |" << setw(30) << setfill(' ') << F << " |" << endl
+         << "| H                                 |" << setw(30) << setfill(' ') << H << " |" << endl
+         << "| Number of indexed genomes         |" << setw(30) << setfill(' ') << monindex.getNbGenomes() << " |" << endl;
     cout << "+-----------------------------------+-------------------------------+" << endl;
 
   return EXIT_SUCCESS;
