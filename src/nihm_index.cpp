@@ -496,11 +496,26 @@ void Index::toFile(const string &filename){
 }
 
 
+
 void Index::output_query(const query_output& toprint,const string& queryname)const{
   #pragma omp critical (outputfile)
   {
     *outfile<<queryname<<"\n";
     // *outfile<<toprint.size()<<"\n";
+    for(uint i(0);i<toprint.size();++i){
+      *outfile<<toprint[i].second<<" "<<toprint[i].first<<'\n';
+    }
+  }
+}
+
+
+
+void Index::output_matrix(const query_output& toprint,const string& queryname)const{
+  #pragma omp critical (outputfile)
+  {
+    for(uint i(0);i<toprint.size();++i){
+      *outfile<<queryname<<"\t";
+    }// *outfile<<toprint.size()<<"\n";
     for(uint i(0);i<toprint.size();++i){
       *outfile<<toprint[i].second<<" "<<toprint[i].first<<'\n';
     }
