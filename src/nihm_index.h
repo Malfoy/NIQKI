@@ -146,7 +146,7 @@ class Index {
     inline query_output query_sketch(const vector<int32_t>& sketch,uint32_t min_score=1)const {
       query_output result;
       if(W<=16){
-        int16_t counts[genome_numbers];
+        int16_t *counts = new int16_t[genome_numbers];
 
         memset(counts,0,genome_numbers);
         for(uint i(0);i<F;++i){
@@ -162,7 +162,7 @@ class Index {
           }
         }
       }else{
-        int32_t counts[genome_numbers];
+        int32_t *counts = new int32_t[genome_numbers];
         for(uint i(0);i<F;++i){
           if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
             for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -215,10 +215,7 @@ class Index {
 
     void output_query(const query_output& toprint,const string& queryname)const;
 
-
     void output_matrix(const query_output& toprint,const string& queryname)const;
-
-
 
     //HERE all the kmer of the file are put in a single sketch and inserted
     void insert_file_whole(const string& filestr);
@@ -230,18 +227,14 @@ class Index {
 
     //HERE all the kmer of the file are put in a single sketch and Queried
     void query_file_whole(const string& filestr,const uint min_score=1);
+    
+    void query_to_file_whole(const string& filestr,const uint min_score=1);
 
     void query_file_of_file_whole(const string& filestr,const uint min_score=1);
 
-
-    /**
-     * \brief Write the Index object into the given file.
-     *
-     * \param filename The file to write.
-     */
     void toFile(const string &filename);
+    
     bool Download_NCBI(const string& str, vector<uint64_t>& hashes);
-
 
     void Download_NCBI_fof(const string& fofncbi,const string& outfile);
 
