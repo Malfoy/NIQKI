@@ -94,14 +94,14 @@ class Index {
     void insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id);
 
     inline void print_bin(uint64_t n,uint bits_to_print=64) const{
-        uint64_t mask=1;
-        mask<<=bits_to_print-1;
-        for(uint i(0);i<bits_to_print;++i){
-            cout<<n/mask;
-            if(n/mask==1){n-=mask;}
-            mask>>=1;
-        }
-        cout<<"\n";
+      uint64_t mask=1;
+      mask<<=bits_to_print-1;
+      for(uint i(0);i<bits_to_print;++i){
+        cout<<n/mask;
+        if(n/mask==1){n-=mask;}
+        mask>>=1;
+      }
+      cout<<"\n";
     }
     /**
      * \brief Returns the informations about the genome number i (starting from 0).
@@ -124,75 +124,75 @@ class Index {
 
 
     inline query_output query_sketchold(const vector<int32_t>& sketch,uint32_t min_score=1)const {
-        query_output result;
-        unordered_map<gid,uint32_t> counts;
-        for(uint i(0);i<F;++i){
-            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
-                for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
-                    counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
-                }
-            }
+      query_output result;
+      unordered_map<gid,uint32_t> counts;
+      for(uint i(0);i<F;++i){
+        if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+          for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+            counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+          }
         }
-        for(auto it=counts.begin();it!=counts.end();it++) {
-            if(it->second>=min_score){
-                result.push_back({it->second,it->first});
-            }
+      }
+      for(auto it=counts.begin();it!=counts.end();it++) {
+        if(it->second>=min_score){
+          result.push_back({it->second,it->first});
         }
-        sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
-        return result;
+      }
+      sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
+      return result;
     }
 
 
     inline query_output query_sketch(const vector<int32_t>& sketch,uint32_t min_score=1)const {
-        query_output result;
-        if(W<=16){
-            int16_t counts[genome_numbers];
-            
-            memset(counts,0,genome_numbers);
-            for(uint i(0);i<F;++i){
-                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
-                    for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
-                        counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
-                    }
-                }
+      query_output result;
+      if(W<=16){
+        int16_t counts[genome_numbers];
+
+        memset(counts,0,genome_numbers);
+        for(uint i(0);i<F;++i){
+          if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+            for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+              counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
             }
-            for(uint32_t i(0);i<genome_numbers;++i){
-                if((uint32_t)counts[i]>=min_score){
-                    result.push_back({counts[i],i});
-                }
-            }
-        }else{
-            int32_t counts[genome_numbers];
-            for(uint i(0);i<F;++i){
-                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
-                    for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
-                        counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
-                    }
-                }
-            }
-            for(uint32_t i(0);i<genome_numbers;++i){
-                if((uint32_t)counts[i]>=min_score){
-                     result.push_back({counts[i],i});
-                }
-            }
+          }
         }
-       
-        sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
-        return result;
+        for(uint32_t i(0);i<genome_numbers;++i){
+          if((uint32_t)counts[i]>=min_score){
+            result.push_back({counts[i],i});
+          }
+        }
+      }else{
+        int32_t counts[genome_numbers];
+        for(uint i(0);i<F;++i){
+          if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+            for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+              counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+            }
+          }
+        }
+        for(uint32_t i(0);i<genome_numbers;++i){
+          if((uint32_t)counts[i]>=min_score){
+            result.push_back({counts[i],i});
+          }
+        }
+      }
+
+      sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
+      return result;
     }
 
 
 
     inline query_output query_sequence(const string& str,uint32_t min_score=1)const {
-        vector<int32_t> sketch;
-        compute_sketch(str,sketch);
-        return query_sketch(sketch,min_score);
+      vector<int32_t> sketch;
+      compute_sketch(str,sketch);
+      return query_sketch(sketch,min_score);
     }
 
 
 
     inline query_output query_sequence_frac(const string& str,double fraction)const {
-        return query_sequence(str,F*fraction);
+      return query_sequence(str,F*fraction);
     }
 
 
@@ -216,6 +216,9 @@ class Index {
     void output_query(const query_output& toprint,const string& queryname)const;
 
 
+    void output_matrix(const query_output& toprint,const string& queryname)const;
+
+
 
     //HERE all the kmer of the file are put in a single sketch and inserted
     void insert_file_whole(const string& filestr);
@@ -231,15 +234,15 @@ class Index {
     void query_file_of_file_whole(const string& filestr,const uint min_score=1);
 
 
-     /**
+    /**
      * \brief Write the Index object into the given file.
      *
      * \param filename The file to write.
      */
     void toFile(const string &filename);
     bool Download_NCBI(const string& str, vector<uint64_t>& hashes);
-    
-    
+
+
     void Download_NCBI_fof(const string& fofncbi,const string& outfile);
 
     string intToString(uint64_t n);
