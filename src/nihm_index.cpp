@@ -10,6 +10,7 @@ using namespace std;
 
 
 Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
+  pretty_printing=true;
   lF=ilF;
   K=iK;
   W=iW;
@@ -26,14 +27,17 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
   for(uint32_t i=0; i<mutex_number;++i) {
     omp_init_lock(&lock[i]);
   }
-  outfile=new zstr::ofstream("out.gz");
+  if(pretty_printing){
+      outfile=new zstr::ofstream("out.gz");
+  }else{
+      outfile=new zstr::ofstream("out.gz",ios::binary);
+  }
 }
 
 
 
 void Index::dump_index_disk(const string& filestr)const{
   zstr::ofstream out(filestr);
-
 	// VARIOUS INTEGERS
 	out.write(reinterpret_cast<const char*>(&lF), sizeof(lF));
   out.write(reinterpret_cast<const char*>(&K), sizeof(K));
@@ -266,8 +270,10 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
     uint32_t bucket_id(unrevhash64(canon)>>(64-lF));//Which Bucket 
     // print_bin(hashed);
     // print_bin(hashed);
-    // print_bin(sketch[bucket_id]);
+    // print_bin(bucket_id);
     hashed=get_fingerprint(hashed);
+    // print_bin(hashed);
+    // cin.get();
     if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
       sketch[bucket_id]=hashed;
     }
@@ -392,7 +398,7 @@ void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
   vector<int32_t> sketch(F,-1);
   while(not in.eof()) {
     Biogetline(&in,ref,type);
-    if(ref.size()>K) {
+    if(ref.size()>=K) {
         compute_sketch_kmer(ref,kmer_sketch);
     }
     ref.clear();
@@ -412,14 +418,22 @@ void Index::insert_file_of_file_whole(const string& filestr) {
   while(not in.eof()) {
     string ref;
     uint32_t id;
+    bool go=false;
     #pragma omp critical
     {
       getline(in,ref);
-      id=genome_numbers;
-      genome_numbers++;
-      filenames.push_back(ref);
+      if(ref.size()>2){
+        if(exists_test(ref)) {
+          id=genome_numbers;
+          genome_numbers++;
+          filenames.push_back(ref);
+          go=true;
+        }
+        // cout<<ref<<endl;
+        // cout<<filenames[id]<<endl;
+      }
     }
-    if(exists_test(ref)) {
+    if(go) {
       insert_file_whole(ref,id);
     }
   }
@@ -437,6 +451,7 @@ void Index::query_file_whole(const string& filestr,const uint min_score) {
   while(not in.eof()){
     Biogetline(&in,ref,type);
     if(ref.size()>K){
+      // cout<<"compute_sketch_kmer"<<endl;
       compute_sketch_kmer(ref,kmer_sketch);
     }
 
@@ -464,6 +479,7 @@ void Index::query_file_of_file_whole(const string& filestr,const uint min_score)
     }
   }
 }
+
 
 
 void pVector(std::vector <gid> const &a) {
@@ -496,17 +512,72 @@ void Index::toFile(const string &filename){
 }
 
 
+
 void Index::output_query(const query_output& toprint,const string& queryname)const{
-  #pragma omp critical (outputfile)
-  {
-    *outfile<<queryname<<"\n";
-    // *outfile<<toprint.size()<<"\n";
-    for(uint i(0);i<toprint.size();++i){
-      *outfile<<toprint[i].second<<" "<<toprint[i].first<<'\n';
+  if(pretty_printing){
+    #pragma omp critical (outputfile)
+    {
+      *outfile<<queryname<<"\n";
+      for(uint i(0);i<toprint.size();++i){
+        *outfile<<filenames[toprint[i].second]<<" "<<toprint[i].first<<'\n';
+      }
     }
-  }
+  }else{
+    #pragma omp critical (outputfile)
+    {
+      *outfile<<queryname<<"\n";
+      *outfile<<(uint32_t)toprint.size();
+      for(uint i(0);i<toprint.size();++i){
+        *outfile<<toprint[i].second<<toprint[i].first;
+      }
+    }
+  } 
 }
 
+
+
+query_output Index::query_sketch(const vector<int32_t>& sketch,uint32_t min_score)const {
+        query_output result;
+        if(W<=16){
+            uint16_t counts[genome_numbers]={0};
+            for(uint i(0);i<F;++i){
+                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+                    for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+                      counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+                    }
+                }
+            }
+            for(uint32_t i(0);i<genome_numbers;++i){
+                if((uint32_t)counts[i]>=min_score){
+                    result.push_back({counts[i],i});
+                }
+            }
+        }else{
+            uint32_t counts[genome_numbers]={0};
+            for(uint i(0);i<F;++i){
+                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+                    for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+                        counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+                    }
+                }
+            }
+            for(uint32_t i(0);i<genome_numbers;++i){
+                if((uint32_t)counts[i]>=min_score){
+                    result.push_back({counts[i],i});
+                }
+            }
+        }
+       
+        sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
+        return result;
+    }
+
+
+query_output Index::query_sequence(const string& str,uint32_t min_score)const {
+    vector<int32_t> sketch;
+    compute_sketch(str,sketch);
+    return query_sketch(sketch,min_score);
+}
 
 
 atomic<uint32_t> genomes_downloaded(0);
