@@ -119,7 +119,7 @@ class Index {
      * \return Returns the number of indexed genomes.
      */
     inline size_t getNbGenomes() const {
-      return infos.size();
+      return genome_numbers;
     }
 
 
