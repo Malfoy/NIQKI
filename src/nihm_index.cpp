@@ -550,9 +550,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch,uint32_t min_scor
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
-                  uint32_t lol=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
                   counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
-                  uint32_t lol2=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
                 }
             }
         }
@@ -566,9 +564,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch,uint32_t min_scor
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
-                  uint32_t lol=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
                   counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
-                  uint32_t lol2=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
                 }
             }
         }
