@@ -80,6 +80,7 @@ enum  optionIndex {
   OUTPUT,
   DUMP,
   LOAD,
+  MATRIX,
   LOGO,
   HELP
 };
@@ -123,6 +124,10 @@ const option::Descriptor usage[] = {
   {OUTPUT, 0, "o", "output", Arg::NonEmpty,
     "  --output, -o <filename> "
       "\tDump the current index in text format to the given file."
+  },
+  {MATRIX, 0, "m", "matrix", Arg::NonEmpty,
+    "  --matrix, -m <filename> "
+      "\tOutput the matrix distance in text format to the given file."
   },
   {DUMP, 0, "d", "dump", Arg::NonEmpty,
     "  --dump, -d <filename> "
@@ -206,11 +211,16 @@ int main(int argc, char * argv[]){
     cout << "Bad usage!!!" << endl;
     return EXIT_FAILURE;
   }
-
+  if (options[OUTPUT]) {
+    out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput";
+    DEBUG_MSG("Output file name = " << out_file);
+  } else {
+    out_file="nihmOutput";
+  }
   cout << "+-------------------------------------------------------------------+" << endl;
   cout << "|                            Informations                           |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
-  Index monindex(F,K,W,H);
+  Index monindex(F,K,W,H,out_file);
   // cout<<F<<endl;
   // monindex.Download_NCBI_fof("genomic_file","sketches");
   // exit(0);
@@ -238,6 +248,8 @@ int main(int argc, char * argv[]){
   /*****************************************/
   /* Add the query file and do the request */
   /*****************************************/
+
+
   if (options[QUERY]) {
     query_file = options[QUERY].last()->arg;       
     ifstream ifs(query_file);
@@ -255,12 +267,17 @@ int main(int argc, char * argv[]){
   elapsed_seconds = end - start;
   cout << "| Whole run lasted (s)              |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
 
-
-  if (options[OUTPUT]) {
-    out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput";
-    DEBUG_MSG("Output file name = " << out_file);
-    monindex.query_to_file_whole(out_file);
+    if (options[MATRIX]) {
+    string matrix_file = options[MATRIX].last()->arg;
+    ifstream ifs(matrix_file);
+    if (!ifs) {
+      cout << "Unable to open the file '" << matrix_file << "'" << endl;
+    }
+    DEBUG_MSG("Opening file...");
+    monindex.query_file_whole_matrix(matrix_file);
+    DEBUG_MSG("Query done.");
   }
+
 
   /**********************************************/
   /* Display the ASCII art logo of the program. */
