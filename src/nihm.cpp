@@ -76,6 +76,7 @@ enum  optionIndex {
   FETCH,
   WORD,
   HHL,
+  MIN,
   QUERY,
   OUTPUT,
   DUMP,
@@ -114,6 +115,11 @@ const option::Descriptor usage[] = {
       "\tSet the value of paramter H to the given value.\v"
       "Example:"
       "\v  --HHL 4 or -H 4" },
+  {MIN,  0, "i" , "intersection"  ,Arg::NonEmpty,
+    "  --inter, -i <int> "
+      "\tSet the value of minimal intersection to the given value.\v"
+      "Example:"
+      "\v  --inter 0.1 or -i 0.1" },
   {QUERY, 0, "Q", "query"    , Arg::NonEmpty,
     "  --query, -Q <filename> "
       "\tFor each sequence in the <sequence_files> search the sequence in the index and print the genomes"
@@ -163,6 +169,7 @@ void deleteOptsArrays() {
 
 int main(int argc, char * argv[]){
   int F=0,K=0,W=0,H=0;
+  double min_fract;
   string list_file = "";
   string query_file = "";
   string out_file = "";
@@ -198,8 +205,9 @@ int main(int argc, char * argv[]){
   DEBUG_MSG("H = " << H);
   W = options[WORD] ? atoi(options[WORD].last()->arg) : 10;
   DEBUG_MSG("W = " << W);
+  min_fract = options[MIN] ? atof(options[MIN].last()->arg) : 0.1;
+  DEBUG_MSG("min_fract = " << min_fract);
 
-  DEBUG_MSG("K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W);
   /************************************/
   /* Complain about unknown arguments */
   /************************************/
@@ -220,7 +228,7 @@ int main(int argc, char * argv[]){
   cout << "+-------------------------------------------------------------------+" << endl;
   cout << "|                            Informations                           |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
-  Index monindex(F,K,W,H,out_file);
+  Index monindex(F,K,W,H,out_file,min_fract);
   // cout<<F<<endl;
   // monindex.Download_NCBI_fof("genomic_file","sketches");
   // exit(0);
@@ -274,7 +282,7 @@ int main(int argc, char * argv[]){
       cout << "Unable to open the file '" << matrix_file << "'" << endl;
     }
     DEBUG_MSG("Opening file...");
-    monindex.query_file_whole_matrix(matrix_file);
+    monindex.query_file_of_file_whole_matrix(matrix_file);
     DEBUG_MSG("Query done.");
   }
 

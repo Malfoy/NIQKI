@@ -44,8 +44,10 @@ class Index {
     uint64_t mask_fingerprint;//2^(64-lf)-1
     uint64_t expected_gemome_size;
     uint64_t offsetUpdatekmer;
+    uint32_t min_score;
     //VARIABLE
     string filename;
+    double min_fract;
     uint32_t genome_numbers;//Number of genomes
     vector<gid>* Buckets;
     omp_lock_t lock[mutex_number];
@@ -58,7 +60,7 @@ class Index {
     /**
      * \brief Default constructor.
      */
-    Index(uint32_t F, uint32_t K, uint32_t W, uint32_t H, string filename);
+    Index(uint32_t F, uint32_t K, uint32_t W, uint32_t H, string filename, double min_fract);
     Index(const string& filestr);
 
 
@@ -173,6 +175,8 @@ class Index {
     void query_file_whole_matrix(const string& filestr,const uint min_score=1);
 
     void query_file_of_file_whole(const string& filestr,const uint min_score=1);
+
+    void query_file_of_file_whole_matrix(const string& filestr,const uint min_score=1);
 
     void toFile(const string &filename);
     
