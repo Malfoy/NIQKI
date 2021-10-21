@@ -583,40 +583,42 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 
 
 query_output Index::query_sketch(const vector<int32_t>& sketch,uint32_t min_score)const {
-        query_output result;
-        if(W<=16){
-            uint16_t counts[genome_numbers]={0};
-            for(uint i(0);i<F;++i){
-                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
-                    for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
-                      counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
-                    }
-                }
-            }
-            for(uint32_t i(0);i<genome_numbers;++i){
-                if((uint32_t)counts[i]>=min_score){
-                    result.push_back({counts[i],i});
-                }
-            }
-        }else{
-            uint32_t counts[genome_numbers]={0};
-            for(uint i(0);i<F;++i){
-                if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
-                    for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
-                        counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
-                    }
-                }
-            }
-            for(uint32_t i(0);i<genome_numbers;++i){
-                if((uint32_t)counts[i]>=min_score){
-                    result.push_back({counts[i],i});
+    query_output result;
+    if(W<=1){
+        uint16_t counts[genome_numbers]={0};
+        for(uint i(0);i<F;++i){
+            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+                for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+                  counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                 }
             }
         }
-       
-        sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
-        return result;
+        for(uint32_t i(0);i<genome_numbers;++i){
+            if((uint32_t)counts[i]>=min_score){
+              cout<<i<<" "<<counts[i]<<endl;
+                result.push_back({counts[i],i});
+            }
+        }
+    }else{
+        uint32_t counts[genome_numbers]={0};
+        for(uint i(0);i<F;++i){
+            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+                for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+                    counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+                }
+            }
+        }
+        for(uint32_t i(0);i<genome_numbers;++i){
+            if((uint32_t)counts[i]>=min_score){
+                result.push_back({counts[i],i});
+            }
+        }
     }
+    
+    sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
+    return result;
+}
+
 
 
 query_output Index::query_sequence(const string& str,uint32_t min_score)const {
@@ -624,6 +626,7 @@ query_output Index::query_sequence(const string& str,uint32_t min_score)const {
     compute_sketch(str,sketch);
     return query_sketch(sketch,min_score);
 }
+
 
 
 void Index::output_matrix(const query_output& toprint,const string& queryname)const{
