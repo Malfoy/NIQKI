@@ -549,18 +549,35 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 
 query_output Index::query_sketch(const vector<int32_t>& sketch,uint32_t min_score)const {
     query_output result;
-    if(W<=1){
+     if(lF<=7){
         uint16_t counts[genome_numbers]={0};
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+                  uint32_t lol=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
                   counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+                  uint32_t lol2=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
                 }
             }
         }
         for(uint32_t i(0);i<genome_numbers;++i){
             if((uint32_t)counts[i]>=min_score){
-              cout<<i<<" "<<counts[i]<<endl;
+                result.push_back({counts[i],i});
+            }
+        }
+      }else if(lF<=15){
+        uint16_t counts[genome_numbers]={0};
+        for(uint i(0);i<F;++i){
+            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+                for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
+                  uint32_t lol=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
+                  counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
+                  uint32_t lol2=counts[Buckets[sketch[i]+i*fingerprint_range][j]];
+                }
+            }
+        }
+        for(uint32_t i(0);i<genome_numbers;++i){
+            if((uint32_t)counts[i]>=min_score){
                 result.push_back({counts[i],i});
             }
         }
