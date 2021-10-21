@@ -207,7 +207,9 @@ int main(int argc, char * argv[]){
     return EXIT_FAILURE;
   }
 
-  cout << "K,F,H,W = " <<K <<","<< F <<"," << H <<","<< W << endl;
+  cout << "+-------------------------------------------------------------------+" << endl;
+  cout << "|                            Informations                           |" << endl;
+  cout << "+-----------------------------------+-------------------------------+" << endl;
   Index monindex(F,K,W,H);
   // cout<<F<<endl;
   // monindex.Download_NCBI_fof("genomic_file","sketches");
@@ -226,12 +228,12 @@ int main(int argc, char * argv[]){
     }
     DEBUG_MSG("Opening file : '"<<list_file<<"'");
     monindex.insert_file_of_file_whole(list_file);
-    cout<<"insert_file_of_file_whole"<<endl;
+    //cout<<"insert_file_of_file_whole"<<endl;
     DEBUG_MSG("File added");
   }
   endindex = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = endindex - start;
-  std::cout << "Indexing lasted " << elapsed_seconds.count() << "s\n";
+  cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
 
   /*****************************************/
   /* Add the query file and do the request */
@@ -244,14 +246,14 @@ int main(int argc, char * argv[]){
     }
     DEBUG_MSG("Opening file...");
     monindex.query_file_of_file_whole(query_file);
-    cout<<"query_file_of_file_whole"<<endl;
+    //cout<<"query_file_of_file_whole"<<endl;
     DEBUG_MSG("Query done.");
   }
   end = std::chrono::system_clock::now();
   elapsed_seconds = end - endindex;
-  cout << "Query lasted " << elapsed_seconds.count() << "s\n";
+  cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
   elapsed_seconds = end - start;
-  cout<<"whole run tool took " << elapsed_seconds.count() << endl;
+  cout << "| Whole run lasted (s)              |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
 
 
   if (options[OUTPUT]) {
@@ -277,14 +279,12 @@ int main(int argc, char * argv[]){
     else cout << "Unable to open file :'"<<logo_name<<"'"<<endl;
     return EXIT_SUCCESS;
   }
-    cout << "+-------------------------------------------------------------------+" << endl;
-    cout << "|                            Informations                           |" << endl;
-    cout << "+-----------------------------------+-------------------------------+" << endl;
-    cout << "| k-mer size                        |" << setw(30) << setfill(' ') << K << " |" << endl
-         << "| F                                 |" << setw(30) << setfill(' ') << F << " |" << endl
-         << "| H                                 |" << setw(30) << setfill(' ') << H << " |" << endl
-         << "| Number of indexed genomes         |" << setw(30) << setfill(' ') << monindex.getNbGenomes() << " |" << endl;
-    cout << "+-----------------------------------+-------------------------------+" << endl;
+  cout << "+-----------------------------------+-------------------------------+" << endl;
+  cout << "| k-mer size                        |" << setw(30) << setfill(' ') << K << " |" << endl
+    << "| F                                 |" << setw(30) << setfill(' ') << F << " |" << endl
+    << "| H                                 |" << setw(30) << setfill(' ') << H << " |" << endl
+    << "| Number of indexed genomes         |" << setw(30) << setfill(' ') << monindex.getNbGenomes() << " |" << endl;
+  cout << "+-----------------------------------+-------------------------------+" << endl;
 
   return EXIT_SUCCESS;
 }
