@@ -26,7 +26,7 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4) {
   for(uint32_t i=0; i<mutex_number;++i) {
     omp_init_lock(&lock[i]);
   }
-  outfile->open("out.txt.gz");
+  outfile=new zstr::ofstream("out.gz");
 }
 
 
@@ -64,7 +64,6 @@ Index::Index(const string& filestr) {
   fingerprint_range=1<<W;
   mask_M=(1<<M)-1;
   maximal_remainder=(1<<H)-1;
-  genome_numbers=0;
   Buckets=new vector<gid>[fingerprint_range*F];
   offsetUpdatekmer=1;
   offsetUpdatekmer<<=2*K;
@@ -85,6 +84,7 @@ Index::Index(const string& filestr) {
 
 Index::~Index() {
   delete[] Buckets;
+  outfile->close();
 }
 
 
@@ -346,7 +346,6 @@ void Index::query_file_lines(const string& filestr, const int min_score)const {
       ref.clear();
       output_query(out,filestr);
     }
-
   }
 }
 
@@ -501,9 +500,9 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
   #pragma omp critical (outputfile)
   {
     *outfile<<queryname<<"\n";
-    *outfile<<toprint.size()<<"\n";
+    // *outfile<<toprint.size()<<"\n";
     for(uint i(0);i<toprint.size();++i){
-      *outfile<<toprint[i].second<<toprint[i].first;
+      *outfile<<toprint[i].second<<" "<<toprint[i].first<<'\n';
     }
   }
 }

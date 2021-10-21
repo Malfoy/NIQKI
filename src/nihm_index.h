@@ -25,7 +25,7 @@
 using namespace std;
 using gid = uint32_t;
 using kmer = uint64_t;
-using query_output=vector<pair<gid, uint32_t>>;
+using query_output=vector<pair<uint32_t,gid>>;
 const uint32_t mutex_number=65536;
 
 
@@ -57,7 +57,7 @@ class Index {
     /**
      * \brief Default constructor.
      */
-    Index(uint32_t lF, uint32_t K, uint32_t W, uint32_t H);
+    Index(uint32_t F, uint32_t K, uint32_t W, uint32_t H);
     Index(const string& filestr);
 
 
@@ -147,6 +147,8 @@ class Index {
         query_output result;
         if(W<=16){
             int16_t counts[genome_numbers];
+            
+            memset(counts,0,genome_numbers);
             for(uint i(0);i<F;++i){
                 if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
                     for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -156,7 +158,7 @@ class Index {
             }
             for(uint32_t i(0);i<genome_numbers;++i){
                 if((uint32_t)counts[i]>=min_score){
-                     result.push_back({counts[i],i});
+                    result.push_back({counts[i],i});
                 }
             }
         }else{
