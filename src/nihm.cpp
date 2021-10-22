@@ -86,6 +86,7 @@ enum  optionIndex {
   MATRIX,
   LOGO,
   DOWNLAD,
+  PRETTY,
   HELP
 };
 
@@ -130,7 +131,10 @@ const option::Descriptor usage[] = {
     "  --minjac, -J <int> "
       "\tMinimal jaccard indice to report (0.1).\v"
       },
- 
+   {PRETTY, 0, "P", "pretty", Arg::None,
+    "  --pretty, -P <filename> "
+      "\t Print a human-readable outfile. By default the outfile is in binary."
+  },
   {MATRIX, 0, "M", "matrix", Arg::NonEmpty,
     "  --matrix, -M <filename> "
       "\tOutput the matrix distance  to the given file."
@@ -272,6 +276,9 @@ int main(int argc, char * argv[]){
   cout << "|                            Informations                           |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
   Index monindex(F,K,W,H,out_file,min_fract);
+  if (options[PRETTY]){
+    monindex.pretty_printing=true;
+  } 
   time_point<system_clock> start, endindex,end;
   start = std::chrono::system_clock::now();
 

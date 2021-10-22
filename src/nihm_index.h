@@ -96,6 +96,7 @@ class Index {
 
     void insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id);
 
+    //UTILS
     inline void print_bin(uint64_t n,uint bits_to_print=64) const{
       uint64_t mask=1;
       mask<<=bits_to_print-1;
