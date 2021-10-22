@@ -72,6 +72,8 @@ struct Arg: public option::Arg {
 enum  optionIndex {
   UNKNOWN,
   LIST,
+  LISTLINES,
+  QUERYLINES,
   KMER,
   FETCH,
   WORD,
@@ -83,71 +85,84 @@ enum  optionIndex {
   LOAD,
   MATRIX,
   LOGO,
+  DOWNLAD,
   HELP
 };
 
 
 
 const option::Descriptor usage[] = {
-  {UNKNOWN, 0,"" , "" , Arg::Unknown,0},
-  {LIST, 0, "l" , "list" ,Arg::NonEmpty,
-    "  --list, -l <file> "
-      "\tUse the content of the given (raw formatted) <file> to load genomes.\v"
-      "Example:"
-      "\v  --list my_genomes.txt" },
+  {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Input***"},
+  {LIST, 0, "I" , "index" ,Arg::NonEmpty,
+    "  --index, -I <filename> "
+      "\tInput file of file to index.\v"
+     },
+  
+   {QUERY, 0, "Q", "query"    , Arg::NonEmpty,
+    "  --query, -Q <filename> "
+      "\tInput file of file to Query.\v"
+      },
+   {LISTLINES, 0, "Il" , "indexlines" ,Arg::NonEmpty,
+    "  --indexlines, -Il <filename> "
+      "\tQuery fa/fq file where each line is a separate entry to index\v"
+     },
+     {QUERYLINES, 0, "Ql", "query"    , Arg::NonEmpty,
+    "  --querylines, -Ql <filename> "
+      "\tInput fa/fq where each line is a separate entry to query\v"
+      },
+  {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Main parameters***"},
   {KMER,  0, "K" , "kmer"  ,Arg::Numeric,
     "  --kmer, -K <int> "
-      "\tSet the value of paramter K to the given value.\v"
-      "Example:"
-      "\v  --kmer 31 or -K 31" },
-  {FETCH,  0, "F" , "fetch"  ,Arg::Numeric,
-    "  --fetch, -F <int> "
-      "\tSet the value of paramter F to the given value.\v"
-      "Example:"
-      "\v  --fetch 16 or -F 16" },
-  {WORD,  0, "W" , "word"  ,Arg::Numeric,
+      "\tKmer size (31).\v"
+      },
+  {FETCH,  0, "S" , "sketch"  ,Arg::Numeric,
+    "  --sketch, -S <int> "
+      "\tSet sketch size to 2^S (15).\v"
+      },
+ 
+ {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Output***"},
+  {OUTPUT, 0, "O", "output", Arg::NonEmpty,
+    "  --output, -O <filename> "
+      "\tOutput file"
+  },
+
+     {MIN,  0, "J" , "minjac"  ,Arg::NonEmpty,
+    "  --minjac, -J <int> "
+      "\tMinimal jaccard indice to report (0.1).\v"
+      },
+ 
+  {MATRIX, 0, "M", "matrix", Arg::NonEmpty,
+    "  --matrix, -M <filename> "
+      "\tOutput the matrix distance  to the given file."
+  },
+  {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Advanced parameters*** (You know what you are doing)"},
+   {WORD,  0, "W" , "word"  ,Arg::Numeric,
     "  --word, -W <int> "
-      "\tSet the value of paramter W to the given value.\v"
-      "Example:"
-      "\v  --word 10 or -W 10" },
+      "\tFingerprint size (10). Modify with caution, larger fingerprints enable faster queries with less false positive but increase EXPONENTIALY the overhead as the index count S*2^W cells. \v"
+     },
   {HHL,  0, "H" , "HHL"  ,Arg::Numeric,
     "  --HHL, -H <int> "
-      "\tSet the value of paramter H to the given value.\v"
-      "Example:"
-      "\v  --HHL 4 or -H 4" },
-  {MIN,  0, "i" , "intersection"  ,Arg::NonEmpty,
-    "  --inter, -i <int> "
-      "\tSet the value of minimal intersection to the given value.\v"
-      "Example:"
-      "\v  --inter 0.1 or -i 0.1" },
-  {QUERY, 0, "Q", "query"    , Arg::NonEmpty,
-    "  --query, -Q <filename> "
-      "\tFor each sequence in the <sequence_files> search the sequence in the index and print the genomes"
-      " with this sequence.\v"
-      "The query file can be either a fasta formatted file (each sequence being a query) or a one line "
-      "Examples:"
-      "\v --query 'sequence_files.txt'" },
-  {OUTPUT, 0, "o", "output", Arg::NonEmpty,
-    "  --output, -o <filename> "
-      "\tDump the current index in text format to the given file."
+      "\tSize of the hyperloglog section (4).  Modify with caution.\v"
+      },
+{UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Index files***"},
+  {DUMP, 0, "D", "dump", Arg::NonEmpty,
+    "  --dump, -D <filename> "
+      "\tDump the current index to the given file."
   },
-  {MATRIX, 0, "m", "matrix", Arg::NonEmpty,
-    "  --matrix, -m <filename> "
-      "\tOutput the matrix distance in text format to the given file."
+  {LOAD, 0, "L", "load", Arg::NonEmpty,
+    "  --load, -L <filename> "
+      "\tLoad an index to the given file."
   },
-  {DUMP, 0, "d", "dump", Arg::NonEmpty,
-    "  --dump, -d <filename> "
-      "\tDump the current index in binary format to the given file."
-  },
-  {LOAD, 0, "l", "load", Arg::NonEmpty,
-    "  --load, -l <filename> "
-      "\tLoad an index in binary format to the given file."
-  },
+    {UNKNOWN, 0,"" , ""    , Arg::Unknown, "\n***Other***"},
+    {DOWNLAD, 0, "Iddl" , "indexdownload" ,Arg::NonEmpty,
+    "  --indexdownload, -Iddl <filename> "
+      "\tGet a list of NCBI accesion to download and to put it in the index (experimental). This this post to get such a list: https://www.biostars.org/p/61081/ \v"
+     },
   {LOGO, 0, "",  "logo", Arg::None,
     "  --logo "
       "\tPrint ASCII art logo, then exit."
   },
-  {UNKNOWN, 0,"" , ""    , Arg::Unknown, "\n* Other usage:"},
+
   {HELP,  0, "h" , "help"  ,Arg::None,
     "  --help, -h  "
       "\tPrint usage and exit." },
@@ -165,6 +180,8 @@ void deleteOptsArrays() {
   }
 }
 
+
+
 static int old_wd;
 static void changeDirFromFilename(const char* fname) {
   DEBUG_MSG("CWD is " << getcwd(NULL, 0));
@@ -181,6 +198,8 @@ static void changeDirFromFilename(const char* fname) {
   DEBUG_MSG("Now CWD is " << getcwd(NULL, 0));
 }
 
+
+
 static void restoreDir() {
   errno = 0;
   if (fchdir(old_wd)) {
@@ -188,6 +207,8 @@ static void restoreDir() {
   }
   DEBUG_MSG("Restore working directory to " << getcwd(NULL, 0));
 }
+
+
 
 int main(int argc, char * argv[]){
   int F=0,K=0,W=0,H=0;
@@ -221,7 +242,7 @@ int main(int argc, char * argv[]){
   /***********************************/
   K = options[KMER] ? atoi(options[KMER].last()->arg) : 31;
   DEBUG_MSG("K = " << K);
-  F = options[FETCH] ? atoi(options[FETCH].last()->arg) : 16;
+  F = options[FETCH] ? atoi(options[FETCH].last()->arg) : 15;
   DEBUG_MSG("F = " << F);
   H = options[HHL] ? atoi(options[HHL].last()->arg) : 4;
   DEBUG_MSG("H = " << H);
@@ -251,9 +272,6 @@ int main(int argc, char * argv[]){
   cout << "|                            Informations                           |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
   Index monindex(F,K,W,H,out_file,min_fract);
-  // cout<<F<<endl;
-  // monindex.Download_NCBI_fof("genomic_file","sketches");
-  // exit(0);
   time_point<system_clock> start, endindex,end;
   start = std::chrono::system_clock::now();
 
@@ -274,6 +292,37 @@ int main(int argc, char * argv[]){
     restoreDir();
 
   }
+
+  if (options[LISTLINES]) {
+    //option::Option* opt = options[LIST];
+    list_file = options[LISTLINES].last()->arg;       
+    ifstream ifs(list_file);
+    if (!ifs) {
+      cout << "Unable to open the file '" << list_file << "'" << endl;
+    }
+    changeDirFromFilename(list_file.c_str());
+    DEBUG_MSG("Opening file : '"<<list_file<<"'");
+    monindex.insert_file_lines(list_file.substr(list_file.find_last_of("/\\") + 1));
+    DEBUG_MSG("File added");
+    restoreDir();
+  }
+
+
+  if (options[DOWNLAD]) {
+    //option::Option* opt = options[LIST];
+    list_file = options[DOWNLAD].last()->arg;       
+    ifstream ifs(list_file);
+    if (!ifs) {
+      cout << "Unable to open the file '" << list_file << "'" << endl;
+    }
+    changeDirFromFilename(list_file.c_str());
+    DEBUG_MSG("Opening file : '"<<list_file<<"'");
+    monindex.Download_NCBI_fof(list_file.substr(list_file.find_last_of("/\\") + 1));
+    DEBUG_MSG("File added");
+    restoreDir();
+  }
+
+
   endindex = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = endindex - start;
   cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
@@ -291,9 +340,21 @@ int main(int argc, char * argv[]){
     }
     DEBUG_MSG("Opening file...");
     monindex.query_file_of_file_whole(query_file);
-    //cout<<"query_file_of_file_whole"<<endl;
     DEBUG_MSG("Query done.");
   }
+
+    if (options[QUERYLINES]) {
+    query_file = options[QUERY].last()->arg;       
+    ifstream ifs(query_file);
+    if (!ifs) {
+      cout << "Unable to open the file '" << query_file << "'" << endl;
+    }
+    DEBUG_MSG("Opening file...");
+    monindex.query_file_lines(query_file);
+    DEBUG_MSG("Query done.");
+  }
+
+
   end = std::chrono::system_clock::now();
   elapsed_seconds = end - endindex;
   cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;

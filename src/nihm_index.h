@@ -71,7 +71,7 @@ class Index {
 
     uint64_t nuc2int(char c) const;
 
-    string kmer2str(uint64_t num,uint k) const ;
+    string kmer2str(uint64_t num) const ;
 
     uint64_t asm_log2(const uint64_t x) const;
 
@@ -127,17 +127,12 @@ class Index {
 
 
 
-    query_output query_sketch(const vector<int32_t>& sketch,uint32_t min_score=1)const;
+    query_output query_sketch(const vector<int32_t>& sketch)const;
 
 
 
-    query_output query_sequence(const string& str,uint32_t min_score=1)const;
+    query_output query_sequence(const string& str)const;
 
-
-
-    query_output query_sequence_frac(const string& str,double fraction)const {
-        return query_sequence(str,F*fraction);
-    }
 
 
     void insert_sequence(const string& str,uint32_t genome_id);
@@ -146,7 +141,7 @@ class Index {
     //TODO HANDLE FASTQ multiFASTA
     void insert_file_lines(const string& filestr);
 
-    void query_file_lines(const string& filestr, const int min_score=1)const;
+    void query_file_lines(const string& filestr)const;
 
 
     void merge_sketch( vector<int32_t>& sketch1,const vector<int32_t>& sketch2)const;
@@ -170,19 +165,19 @@ class Index {
     void insert_file_of_file_whole(const string& filestr);
 
     //HERE all the kmer of the file are put in a single sketch and Queried
-    void query_file_whole(const string& filestr,const uint min_score=1);
+    void query_file_whole(const string& filestr);
     
-    void query_file_whole_matrix(const string& filestr,const uint min_score=1);
+    void query_file_whole_matrix(const string& filestr);
 
-    void query_file_of_file_whole(const string& filestr,const uint min_score=1);
+    void query_file_of_file_whole(const string& filestr);
 
-    void query_file_of_file_whole_matrix(const string& filestr,const uint min_score=1);
+    void query_file_of_file_whole_matrix(const string& filestr);
 
     void toFile(const string &filename);
     
-    bool Download_NCBI(const string& str, vector<uint64_t>& hashes);
+    bool Download_NCBI(const string& str, vector<int32_t> & sketch);
 
-    void Download_NCBI_fof(const string& fofncbi,const string& outfile);
+    void Download_NCBI_fof(const string& fofncbi);
 
     string intToString(uint64_t n);
 

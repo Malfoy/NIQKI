@@ -9,6 +9,7 @@ using namespace std;
 const int bufferSize = 10000;
 
 
+
 Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const string ifilename="nihmOutput", double min_fract=0.1) {
   filename=ifilename;
   pretty_printing=true;
@@ -38,6 +39,7 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const 
 
 
 
+//TODO UPDATE
 void Index::dump_index_disk(const string& filestr)const{
   zstr::ofstream out(filestr);
 	// VARIOUS INTEGERS
@@ -58,6 +60,7 @@ void Index::dump_index_disk(const string& filestr)const{
 
 
 
+//TODO UPDATE
 Index::Index(const string& filestr) {
   zstr::ifstream in(filestr);
   in.read(reinterpret_cast< char*>(&lF), sizeof(lF));
@@ -94,7 +97,7 @@ Index::~Index() {
 }
 
 
-
+//UTILS
 uint64_t Index::nuc2int(char c)const {
   switch(c){
     case 'C': return 1;
@@ -107,12 +110,11 @@ uint64_t Index::nuc2int(char c)const {
 }
 
 
-
-string Index::kmer2str(uint64_t num,uint k)const {
+string Index::kmer2str(uint64_t num)const {
   string res;
   uint64_t anc(1);
-  anc<<=(2*(k-1));
-  for(uint i(0);i<k;++i){
+  anc<<=(2*(K-1));
+  for(uint i(0);i<K;++i){
     uint nuc=num/anc;
     num=num%anc;
     if(nuc==3){
@@ -137,7 +139,7 @@ string Index::kmer2str(uint64_t num,uint k)const {
 }
 
 
-
+//UTILS
 uint64_t Index::asm_log2(const uint64_t x) const {
   uint64_t y;
   asm ( "\tbsr %1, %0\n"
@@ -148,7 +150,7 @@ uint64_t Index::asm_log2(const uint64_t x) const {
 }
 
 
-
+//UTILS
 uint64_t Index::nuc2intrc(char c)const {
   switch(c) {
     case 'A': return 3;
@@ -191,7 +193,7 @@ kmer Index::rcb(kmer min)const {
 }
 
 
-
+//UTILS
 kmer Index::str2numstrand(const string& str)const {
   uint64_t res(0);
   for(uint i(0);i<str.size();i++) {
@@ -215,26 +217,14 @@ kmer Index::str2numstrand(const string& str)const {
 
 
 uint32_t Index::get_fingerprint(uint64_t hashed)const {
-  // cout<<"get_fingerprint"<<endl;
-  // cout<<hashed<<endl;
-  // print_bin(hashed,64-lF);
   uint32_t result;
   result = hashed&mask_M;//we keep the last bits for the minhash part
   uint32_t ll=asm_log2(hashed);//we compute the log of the hash
-  // cout<<ll<<endl;
-  // cout<<maximal_remainder<<endl;
   uint32_t size_zero_trail(64-ll-1);
-  // cout<<size_zero_trail<<endl;
   int remaining_nonzero=maximal_remainder-size_zero_trail;
   remaining_nonzero=max(0,remaining_nonzero);
   // if the log is too high can cannont store it on H bit here we sature
-  // cout<<ll<<endl;
-  // print_bin(result,8);
   result+=remaining_nonzero<<M;// we concatenant the hyperloglog part with the minhash part
-  // cout<<"get_fingerprintOUT"<<endl;
-  // cout<<remaining_nonzero<<endl;
-  // print_bin(result,8);
-  // cin.get();
   return result;
 }
 
@@ -270,12 +260,7 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
     kmer canon(min(S_kmer,RC_kmer));//Kmer min, the one selected
     uint64_t hashed=revhash64(canon);
     uint32_t bucket_id(unrevhash64(canon)>>(64-lF));//Which Bucket 
-    // print_bin(hashed);
-    // print_bin(hashed);
-    // print_bin(bucket_id);
     hashed=get_fingerprint(hashed);
-    // print_bin(hashed);
-    // cin.get();
     if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
       sketch[bucket_id]=hashed;
     }
@@ -343,14 +328,14 @@ void Index::insert_file_lines(const string& filestr) {
 
 
 
-void Index::query_file_lines(const string& filestr, const int min_score)const {
+void Index::query_file_lines(const string& filestr)const {
   char type=get_data_type(filestr);
   zstr::ifstream in(filestr);
   string ref,head;
   while(not in.eof()) {
     Biogetline(&in,ref,type);
     if(ref.size()>K) {
-      auto out(query_sequence(ref,min_score));
+      auto out(query_sequence(ref));
       ref.clear();
       output_query(out,filestr);
     }
@@ -363,31 +348,6 @@ void Index::merge_sketch( vector<int32_t>& sketch1,const vector<int32_t>& sketch
   for(uint i(0);i<sketch1.size();++i) {
     sketch1[i]=min(sketch1[i],sketch2[i]);
   }
-}
-
-
-
-//HERE all the kmer of the file are put in a single sketch and inserted
-void Index::insert_file_whole(const string& filestr) {
-  char type=get_data_type(filestr);
-  zstr::ifstream in(filestr);
-  string ref;
-  vector<uint64_t> kmer_sketch;
-  vector<int32_t> sketch(F,-1);
-  while(not in.eof()) {
-    Biogetline(&in,ref,type);
-    if(ref.size()>K) {
-      compute_sketch_kmer(ref,kmer_sketch);
-    }else{
-    }
-    ref.clear();
-  }   
-  for(uint i(0);i<F;++i) {
-    sketch[i]=get_fingerprint(kmer_sketch[i]);
-  }
-  insert_sketch(sketch,genome_numbers);
-  genome_numbers++;
-  filenames.push_back(ref);
 }
 
 
@@ -439,8 +399,6 @@ void Index::insert_file_of_file_whole(const string& filestr) {
           filenames.push_back(ref);
           go=true;
         }
-        // cout<<ref<<endl;
-        // cout<<filenames[id]<<endl;
       }
     }
     if(go) {
@@ -454,7 +412,7 @@ void Index::insert_file_of_file_whole(const string& filestr) {
 
 
 //HERE all the kmer of the file are put in a single sketch and Queried
-void Index::query_file_whole(const string& filestr,const uint min_score) {
+void Index::query_file_whole(const string& filestr) {
   char type=get_data_type(filestr);
   zstr::ifstream in(filestr);
   string ref;
@@ -471,12 +429,12 @@ void Index::query_file_whole(const string& filestr,const uint min_score) {
   for(uint i(0);i<F;++i) {
     sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
-  auto out(query_sketch(sketch,min_score));
+  auto out(query_sketch(sketch));
   output_query(out,filestr);
 }
 
 
-void Index::query_file_whole_matrix(const string& filestr,const uint min_score) {
+void Index::query_file_whole_matrix(const string& filestr) {
    char type=get_data_type(filestr);
   zstr::ifstream in(filestr);
   string ref;
@@ -491,11 +449,11 @@ void Index::query_file_whole_matrix(const string& filestr,const uint min_score) 
   for(uint i(0);i<F;++i) {
     sketch[i]=get_fingerprint(kmer_sketch[i]);
   }
-  auto out(query_sketch(sketch,min_score));
+  auto out(query_sketch(sketch));
   output_matrix(out,filestr);
 }
 
-void Index::query_file_of_file_whole_matrix(const string& filestr,const uint min_score) {
+void Index::query_file_of_file_whole_matrix(const string& filestr) {
   //TODO LE HEADER
   *outfile<<"##Names"<<"\t";
   for(uint i(0);i<filenames.size();++i){
@@ -517,7 +475,7 @@ void Index::query_file_of_file_whole_matrix(const string& filestr,const uint min
 }
 
 
-void Index::query_file_of_file_whole(const string& filestr,const uint min_score) {
+void Index::query_file_of_file_whole(const string& filestr) {
   zstr::ifstream in(filestr);
 #pragma omp parallel
   while(not in.eof()){
@@ -557,7 +515,7 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 
 
 
-query_output Index::query_sketch(const vector<int32_t>& sketch,uint32_t min_score)const {
+query_output Index::query_sketch(const vector<int32_t>& sketch)const {
     query_output result;
      if(lF<=7){
         uint16_t counts[genome_numbers]={0};
@@ -609,10 +567,10 @@ query_output Index::query_sketch(const vector<int32_t>& sketch,uint32_t min_scor
 
 
 
-query_output Index::query_sequence(const string& str,uint32_t min_score)const {
+query_output Index::query_sequence(const string& str)const {
     vector<int32_t> sketch;
     compute_sketch(str,sketch);
-    return query_sketch(sketch,min_score);
+    return query_sketch(sketch);
 }
 
 
@@ -667,7 +625,7 @@ string get_name_ncbi(const string& str){
 
 
 
-bool Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
+bool Index::Download_NCBI(const string& str, vector<int32_t>& sketch){
   string cmd("wget -qO - "+str+"/"+get_name_ncbi(str)+"_genomic.fna.gz | gzip -d -c -");
   //~ cout<<cmd<<endl;
   array<char, 1024*1024> buffer;
@@ -689,7 +647,7 @@ bool Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
     }else{
       if(sequence.size()>K){
         something_to_eat=true;
-        compute_sketch_kmer(sequence,hashes);
+        compute_sketch(sequence,sketch);
         bases_downloaded+=sequence.size();
         sequence.clear();
       }
@@ -708,29 +666,31 @@ bool Index::Download_NCBI(const string& str, vector<uint64_t>& hashes){
 
 
 //Hacky function to download genome from ncbi
-void Index::Download_NCBI_fof(const string& fofncbi,const string& outfile){
-  cout<<"go ncbi"<<endl;
+void Index::Download_NCBI_fof(const string& fofncbi){
   zstr::ifstream in(fofncbi);
-  ofstream out(outfile);
 #pragma omp parallel
   while(not in.eof()){
     string ref;
-#pragma omp critical (in)
+    uint32_t id;
+    #pragma omp critical (in)
     {
       getline(in,ref);
     }
     if(ref.size()>5){
-      vector<uint64_t> hashes(F,-1);
-      if(Download_NCBI(ref,hashes)){
-#pragma omp critical (out)
+      vector<int32_t> sketch(F,-1);
+      if(Download_NCBI(ref,sketch)){
+        #pragma omp critical (genomenumber)
         {
-          out.write(reinterpret_cast<const char*>(&hashes[0]),F*8);
+          id=genome_numbers;
+          genome_numbers++;
+          filenames.push_back(ref);
         }
+        insert_sketch(sketch,id);
       }
     }
     ref.clear();
   }
-  cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
+  cout<<"#genomes downloaded: "<<intToString(genomes_downloaded)<<" #bases downloaded: "<<intToString(bases_downloaded)<<endl;
 }
 
 
