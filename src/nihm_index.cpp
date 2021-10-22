@@ -10,7 +10,7 @@ const int bufferSize = 10000;
 
 
 
-Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const string ifilename="nihmOutput", double min_fract=0.1) {
+Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const string ifilename="nihmOutput.gz", double min_fract=0.1) {
   filename=ifilename;
   pretty_printing=false;
   lF=ilF;
@@ -314,15 +314,27 @@ void Index::insert_sequence(const string& str,uint32_t genome_id) {
 void Index::insert_file_lines(const string& filestr) {
   char type=get_data_type(filestr);
   zstr::ifstream in(filestr);
-  string ref,header;
-  while(not in.eof()) {
-    Biogetline(&in,ref,type,header);
-    if(ref.size()>K) {
-      insert_sequence(ref,genome_numbers);
-      genome_numbers++;
-      filenames.push_back(header);
+  #pragma omp parallel
+  {
+    string ref,header;
+    uint32_t id;
+    while(not in.eof()) {
+      #pragma omp critical (in)
+      {
+        Biogetline(&in,ref,type,header);
+      }
+      if(ref.size()>K) {
+        #pragma omp critical (genome_numbers)
+      {
+        id=genome_numbers;
+        genome_numbers++;
+        filenames.push_back(header);
+      }
+        insert_sequence(ref,id);
+
+      }
+      ref.clear();
     }
-    ref.clear();
   }
 }
 
@@ -331,15 +343,21 @@ void Index::insert_file_lines(const string& filestr) {
 void Index::query_file_lines(const string& filestr)const {
   char type=get_data_type(filestr);
   zstr::ifstream in(filestr);
-  string ref,head;
-  while(not in.eof()) {
-    Biogetline(&in,ref,type);
-    if(ref.size()>K) {
-      auto out(query_sequence(ref));
-      ref.clear();
-      output_query(out,filestr);
+   #pragma omp parallel
+   {
+    string ref,head;
+    while(not in.eof()) {
+      #pragma omp critical (in)
+      {
+        Biogetline(&in,ref,type);
+      }
+      if(ref.size()>K) {
+        auto out(query_sequence(ref));
+        ref.clear();
+        output_query(out,filestr);
+      }
     }
-  }
+   }
 }
 
 
@@ -382,29 +400,31 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     exit(0);
   }
 #pragma omp parallel
-  while(not in.eof()) {
+{
     string ref;
     uint32_t id;
-    bool go=false;
-    #pragma omp critical
-    {
-      getline(in,ref);
-      DEBUG_MSG("Getline from file :'"<<filestr<<"' = '"<<ref<<"'");
+    while(not in.eof()) {
+      bool go=false;
+      #pragma omp critical
+      {
+        getline(in,ref);
+        DEBUG_MSG("Getline from file :'"<<filestr<<"' = '"<<ref<<"'");
 
-      if(ref.size()>2){
-        if(exists_test(ref)) {
-          id=genome_numbers;
-          DEBUG_MSG("Genome numbers: "<<genome_numbers);
-          genome_numbers++;
-          filenames.push_back(ref);
-          go=true;
+        if(ref.size()>2){
+          if(exists_test(ref)) {
+            id=genome_numbers;
+            DEBUG_MSG("Genome numbers: "<<genome_numbers);
+            genome_numbers++;
+            filenames.push_back(ref);
+            go=true;
+          }
         }
       }
-    }
-    if(go) {
-      DEBUG_MSG("Adding file :'"<<ref<<"'");
-      insert_file_whole(ref,id);
-      DEBUG_MSG("File: '"<<ref<<"' added");
+      if(go) {
+        DEBUG_MSG("Adding file :'"<<ref<<"'");
+        insert_file_whole(ref,id);
+        DEBUG_MSG("File: '"<<ref<<"' added");
+      }
     }
   }
 }
@@ -421,7 +441,6 @@ void Index::query_file_whole(const string& filestr) {
   while(not in.eof()){
     Biogetline(&in,ref,type);
     if(ref.size()>K){
-      // cout<<"compute_sketch_kmer"<<endl;
       compute_sketch_kmer(ref,kmer_sketch);
     }
 
@@ -461,9 +480,11 @@ void Index::query_file_of_file_whole_matrix(const string& filestr) {
   }
   zstr::ifstream in(filestr);
 #pragma omp parallel
+{
+  string ref;
   while(not in.eof()){
-    string ref;
-#pragma omp critical (input)
+    
+    #pragma omp critical (input)
     {
       getline(in,ref);
     }
@@ -471,23 +492,29 @@ void Index::query_file_of_file_whole_matrix(const string& filestr) {
       query_file_whole_matrix(ref);
       *outfile<<endl;
     }
+    ref.clear();
   }
+}
 }
 
 
 void Index::query_file_of_file_whole(const string& filestr) {
   zstr::ifstream in(filestr);
 #pragma omp parallel
+{
+  string ref;
   while(not in.eof()){
-    string ref;
-#pragma omp critical (input)
+    
+  #pragma omp critical (input)
     {
       getline(in,ref);
     }
     if(exists_test(ref)){
       query_file_whole(ref);
     }
+    ref.clear();
   }
+}
 }
 
 
@@ -627,7 +654,6 @@ string get_name_ncbi(const string& str){
 
 bool Index::Download_NCBI(const string& str, vector<int32_t>& sketch){
   string cmd("wget -qO - "+str+"/"+get_name_ncbi(str)+"_genomic.fna.gz | gzip -d -c -");
-  //~ cout<<cmd<<endl;
   array<char, 1024*1024> buffer;
   string result;
   string sequence;
@@ -657,7 +683,7 @@ bool Index::Download_NCBI(const string& str, vector<int32_t>& sketch){
   if(something_to_eat){
     uint gtemp=++genomes_downloaded;
     if(gtemp%1000==0){
-      cout<<"genomes ddl: "<<intToString(genomes_downloaded)<<" bases ddl: "<<intToString(bases_downloaded)<<endl;
+       cout<<"#genomes downloaded: "<<intToString(genomes_downloaded)<<" #bases downloaded: "<<intToString(bases_downloaded)<<endl;
     }
   }
   return something_to_eat;
@@ -669,9 +695,11 @@ bool Index::Download_NCBI(const string& str, vector<int32_t>& sketch){
 void Index::Download_NCBI_fof(const string& fofncbi){
   zstr::ifstream in(fofncbi);
 #pragma omp parallel
+{
+  string ref;
+  uint32_t id;
   while(not in.eof()){
-    string ref;
-    uint32_t id;
+    
     #pragma omp critical (in)
     {
       getline(in,ref);
@@ -690,6 +718,7 @@ void Index::Download_NCBI_fof(const string& fofncbi){
     }
     ref.clear();
   }
+}
   cout<<"#genomes downloaded: "<<intToString(genomes_downloaded)<<" #bases downloaded: "<<intToString(bases_downloaded)<<endl;
 }
 

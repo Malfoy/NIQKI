@@ -32,14 +32,19 @@
 #include <iomanip> // std::setw
 #include <zlib.h>
 
+
+
 using namespace std;
 using namespace chrono;
+
+
 
 using option::Option;
 using option::Descriptor;
 using option::Parser;
 using option::Stats;
 using option::ArgStatus;
+
 
 
 struct Arg: public option::Arg {
@@ -67,6 +72,7 @@ struct Arg: public option::Arg {
     return option::ARG_ILLEGAL;
   }
 };
+
 
 
 enum  optionIndex {
@@ -103,12 +109,12 @@ const option::Descriptor usage[] = {
     "  --query, -Q <filename> "
       "\tInput file of file to Query.\v"
       },
-   {LISTLINES, 0, "Il" , "indexlines" ,Arg::NonEmpty,
-    "  --indexlines, -Il <filename> "
+   {LISTLINES, 0, "i" , "indexlines" ,Arg::NonEmpty,
+    "  --indexlines, -i <filename> "
       "\tQuery fa/fq file where each line is a separate entry to index\v"
      },
-     {QUERYLINES, 0, "Ql", "query"    , Arg::NonEmpty,
-    "  --querylines, -Ql <filename> "
+     {QUERYLINES, 0, "l", "querylines"    , Arg::NonEmpty,
+    "  --querylines, -q <filename> "
       "\tInput fa/fq where each line is a separate entry to query\v"
       },
   {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Main parameters***"},
@@ -351,7 +357,7 @@ int main(int argc, char * argv[]){
   }
 
     if (options[QUERYLINES]) {
-    query_file = options[QUERY].last()->arg;       
+    query_file = options[QUERYLINES].last()->arg;       
     ifstream ifs(query_file);
     if (!ifs) {
       cout << "Unable to open the file '" << query_file << "'" << endl;
