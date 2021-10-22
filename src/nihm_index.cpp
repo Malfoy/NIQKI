@@ -415,7 +415,12 @@ void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
 
 //HERE all the files of the fof are inserted as a separate entry in the index
 void Index::insert_file_of_file_whole(const string& filestr) {
+  DEBUG_MSG("Opening file : '"<<filestr<<"'");
   ifstream in(filestr);
+  if (!in) {
+    cout << "Unable to open the file '" << filestr << "'" << endl;
+    exit(0);
+  }
 #pragma omp parallel
   while(not in.eof()) {
     string ref;
@@ -424,9 +429,12 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     #pragma omp critical
     {
       getline(in,ref);
+      DEBUG_MSG("Getline from file :'"<<filestr<<"' = '"<<ref<<"'");
+
       if(ref.size()>2){
         if(exists_test(ref)) {
           id=genome_numbers;
+          DEBUG_MSG("Genome numbers: "<<genome_numbers);
           genome_numbers++;
           filenames.push_back(ref);
           go=true;
@@ -436,7 +444,9 @@ void Index::insert_file_of_file_whole(const string& filestr) {
       }
     }
     if(go) {
+      DEBUG_MSG("Adding file :'"<<ref<<"'");
       insert_file_whole(ref,id);
+      DEBUG_MSG("File: '"<<ref<<"' added");
     }
   }
 }

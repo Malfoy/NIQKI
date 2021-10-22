@@ -165,7 +165,29 @@ void deleteOptsArrays() {
   }
 }
 
+static int old_wd;
+static void changeDirFromFilename(const char* fname) {
+  DEBUG_MSG("CWD is " << getcwd(NULL, 0));
+  old_wd = open(".", O_CLOEXEC);
+  char fname_copy[PATH_MAX];
+  strncpy(fname_copy, fname, PATH_MAX);
+  fname_copy[PATH_MAX - 1] = '\0';
+  char *dname = dirname(fname_copy);
+  DEBUG_MSG("Changing to directory " << dname);
+  errno = 0;
+  if (chdir(dname)) {
+    cout << "Error: " << strerror(errno) << endl;
+  }
+  DEBUG_MSG("Now CWD is " << getcwd(NULL, 0));
+}
 
+static void restoreDir() {
+  errno = 0;
+  if (fchdir(old_wd)) {
+    cout << "Error: " << strerror(errno) << endl;
+  }
+  DEBUG_MSG("Restore working directory to " << getcwd(NULL, 0));
+}
 
 int main(int argc, char * argv[]){
   int F=0,K=0,W=0,H=0;
@@ -239,15 +261,18 @@ int main(int argc, char * argv[]){
   /* Add the genomes given in config files */
   /*****************************************/
   if (options[LIST]) {
+    //option::Option* opt = options[LIST];
     list_file = options[LIST].last()->arg;       
     ifstream ifs(list_file);
     if (!ifs) {
       cout << "Unable to open the file '" << list_file << "'" << endl;
     }
+    changeDirFromFilename(list_file.c_str());
     DEBUG_MSG("Opening file : '"<<list_file<<"'");
-    monindex.insert_file_of_file_whole(list_file);
-    //cout<<"insert_file_of_file_whole"<<endl;
+    monindex.insert_file_of_file_whole(list_file.substr(list_file.find_last_of("/\\") + 1));
     DEBUG_MSG("File added");
+    restoreDir();
+
   }
   endindex = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = endindex - start;
