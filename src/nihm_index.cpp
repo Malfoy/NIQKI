@@ -605,13 +605,13 @@ query_output Index::query_sequence(const string& str)const {
 void Index::output_matrix(const query_output& toprint,const string& queryname)const{
 #pragma omp critical (outputfile)
   {
-    double nadine[genome_numbers]={0};
+    double buffer[genome_numbers]={0};
     for(uint i(0);i<toprint.size();++i){
-      nadine[toprint[i].second]=((double)toprint[i].first)/F;
+      buffer[toprint[i].second]=((double)toprint[i].first)/F;
     }
     *outfile<<queryname<<"\t";
     for(uint i(0);i<genome_numbers;++i){
-      *outfile<<nadine[i]<<"\t";
+      *outfile<<buffer[i]<<"\t";
     }
   }
 }
