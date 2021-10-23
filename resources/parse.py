@@ -43,21 +43,22 @@ di_dashing = build_dashing_dict(file_name_dashing)
 di_nihm = build_dashing_dict(file_name_nihm)
 
 
-print("---- Print dashing dictionary ----")
-i = 0
-for key, value in di_dashing.items() :
-    print (key, value)
-    i += 1
-print(i)
-i = 0
-print("---- Print nihm dictionary ----")
-for key, value in di_nihm.items() :
-    print (key, value)
-    i += 1
-print(i)
-#if di_dashing.keys() != di_nihm.keys():
-#    print("Not the same set of files")
-#    exit(0)
+#print("---- Print dashing dictionary ----")
+#i = 0
+#for key, value in di_dashing.items() :
+#    print (key, value)
+#    i += 1
+#print(i)
+#i = 0
+#print("---- Print nihm dictionary ----")
+#for key, value in di_nihm.items() :
+#    print (key, value)
+#    i += 1
+#print(i)
+
+if di_dashing.keys() != di_nihm.keys():
+    print("Not the same set of files")
+    exit(0)
 
 scores_dashing = []
 scores_nihm = []
