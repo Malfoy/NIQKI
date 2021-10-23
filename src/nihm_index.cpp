@@ -453,50 +453,6 @@ void Index::query_file_whole(const string& filestr) {
 }
 
 
-void Index::query_file_whole_matrix(const string& filestr) {
-   char type=get_data_type(filestr);
-  zstr::ifstream in(filestr);
-  string ref;
-  vector<uint64_t> kmer_sketch;
-  vector<int32_t> sketch(F,-1);
-  while(not in.eof()){
-    Biogetline(&in,ref,type);
-    if(ref.size()>K){
-      compute_sketch_kmer(ref,kmer_sketch);
-    }
-  }
-  for(uint i(0);i<F;++i) {
-    sketch[i]=get_fingerprint(kmer_sketch[i]);
-  }
-  auto out(query_sketch(sketch));
-  output_matrix(out,filestr);
-}
-
-void Index::query_file_of_file_whole_matrix(const string& filestr) {
-  //TODO LE HEADER
-  *outfile<<"##Names"<<"\t";
-  for(uint i(0);i<filenames.size();++i){
-    *outfile<<filenames[i]<<"\t";
-  }
-  zstr::ifstream in(filestr);
-#pragma omp parallel
-{
-  string ref;
-  while(not in.eof()){
-    
-    #pragma omp critical (input)
-    {
-      getline(in,ref);
-    }
-    if(exists_test(ref)){
-      query_file_whole_matrix(ref);
-      *outfile<<endl;
-    }
-    ref.clear();
-  }
-}
-}
-
 
 void Index::query_file_of_file_whole(const string& filestr) {
   zstr::ifstream in(filestr);
@@ -600,7 +556,55 @@ query_output Index::query_sequence(const string& str)const {
     return query_sketch(sketch);
 }
 
+/*******************************************************************************************/
+/******************************* Code Duplication for matrix *******************************/
+/*******************************************************************************************/
 
+void Index::query_file_whole_matrix(const string& filestr) {
+  char type=get_data_type(filestr);
+  zstr::ifstream in(filestr);
+  string ref;
+  vector<uint64_t> kmer_sketch;
+  vector<int32_t> sketch(F,-1);
+  while(not in.eof()){
+    Biogetline(&in,ref,type);
+    if(ref.size()>K){
+      compute_sketch_kmer(ref,kmer_sketch);
+    }
+  }
+  for(uint i(0);i<F;++i) {
+    sketch[i]=get_fingerprint(kmer_sketch[i]);
+  }
+  auto out(query_sketch(sketch));
+  DEBUG_MSG("Sending out in :'"<<filestr<<"'");
+  output_matrix(out,filestr);
+}
+
+void Index::query_file_of_file_whole_matrix(const string& filestr) {
+  //TODO LE HEADER
+  *outfile<<"##Names"<<"\t";
+  for(uint i(0);i<filenames.size();++i){
+    *outfile<<filenames[i]<<"\t";
+  }
+  *outfile<<"\n";
+  zstr::ifstream in(filestr);
+#pragma omp parallel
+{
+  string ref;
+  while(not in.eof()){
+
+    #pragma omp critical (input)
+    {
+      getline(in,ref);
+    }
+    if(exists_test(ref)){
+      query_file_whole_matrix(ref);
+      *outfile<<endl;
+    }
+    ref.clear();
+  }
+}
+}
 
 void Index::output_matrix(const query_output& toprint,const string& queryname)const{
 #pragma omp critical (outputfile)
@@ -615,8 +619,9 @@ void Index::output_matrix(const query_output& toprint,const string& queryname)co
     }
   }
 }
-
-
+/***********************************************************************************************/
+/******************************* End Code Duplication for matrix *******************************/
+/***********************************************************************************************/
 
 atomic<uint32_t> genomes_downloaded(0);
 atomic<uint64_t> bases_downloaded(0);
