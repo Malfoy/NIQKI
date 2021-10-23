@@ -130,7 +130,7 @@ const option::Descriptor usage[] = {
  {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Output***"},
   {OUTPUT, 0, "O", "output", Arg::NonEmpty,
     "  --output, -O <filename> "
-      "\tOutput file"
+      "\tOutput file (nihmOutput.gz)"
   },
 
      {MIN,  0, "J" , "minjac"  ,Arg::NonEmpty,
@@ -138,7 +138,7 @@ const option::Descriptor usage[] = {
       "\tMinimal jaccard indice to report (0.1).\v"
       },
    {PRETTY, 0, "P", "pretty", Arg::None,
-    "  --pretty, -P <filename> "
+    "  --pretty, -P "
       "\t Print a human-readable outfile. By default the outfile is in binary."
   },
   {MATRIX, 0, "M", "matrix", Arg::NonEmpty,
@@ -148,7 +148,7 @@ const option::Descriptor usage[] = {
   {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Advanced parameters*** (You know what you are doing)"},
    {WORD,  0, "W" , "word"  ,Arg::Numeric,
     "  --word, -W <int> "
-      "\tFingerprint size (10). Modify with caution, larger fingerprints enable faster queries with less false positive but increase EXPONENTIALY the overhead as the index count S*2^W cells. \v"
+      "\tFingerprint size (12). Modify with caution, larger fingerprints enable faster queries with less false positive but increase EXPONENTIALY the overhead as the index count S*2^W cells. \v"
      },
   {HHL,  0, "H" , "HHL"  ,Arg::Numeric,
     "  --HHL, -H <int> "
@@ -166,7 +166,7 @@ const option::Descriptor usage[] = {
     {UNKNOWN, 0,"" , ""    , Arg::Unknown, "\n***Other***"},
     {DOWNLAD, 0, "Iddl" , "indexdownload" ,Arg::NonEmpty,
     "  --indexdownload, -Iddl <filename> "
-      "\tGet a list of NCBI accesion to download and to put it in the index (experimental). This this post to get such a list: https://www.biostars.org/p/61081/ \v"
+      "\tGet a list of NCBI accesion to download and to put it in the index (experimental). This this post to get such a list: https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/#allcomplete \v"
      },
   {LOGO, 0, "",  "logo", Arg::None,
     "  --logo "
@@ -256,7 +256,7 @@ int main(int argc, char * argv[]){
   DEBUG_MSG("F = " << F);
   H = options[HHL] ? atoi(options[HHL].last()->arg) : 4;
   DEBUG_MSG("H = " << H);
-  W = options[WORD] ? atoi(options[WORD].last()->arg) : 10;
+  W = options[WORD] ? atoi(options[WORD].last()->arg) : 12;
   DEBUG_MSG("W = " << W);
   min_fract = options[MIN] ? atof(options[MIN].last()->arg) : 0.1;
   DEBUG_MSG("min_fract = " << min_fract);
