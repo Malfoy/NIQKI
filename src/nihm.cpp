@@ -273,10 +273,10 @@ int main(int argc, char * argv[]){
     return EXIT_FAILURE;
   }
   if (options[OUTPUT]) {
-    out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput";
+    out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput.gz";
     DEBUG_MSG("Output file name = " << out_file);
   } else {
-    out_file="nihmOutput";
+    out_file="nihmOutput.gz";
   }
   cout << "+-------------------------------------------------------------------+" << endl;
   cout << "|                            Informations                           |" << endl;
@@ -380,7 +380,17 @@ int main(int argc, char * argv[]){
     if (!ifs) {
       cout << "Unable to open the file '" << matrix_file << "'" << endl;
     }
-    monindex.query_file_of_file_whole_matrix(matrix_file);
+    if (!options[LIST] and !options[LISTLINES]) {
+      changeDirFromFilename(matrix_file.c_str());
+      DEBUG_MSG("Creating the index from: '"<<matrix_file.substr(matrix_file.find_last_of("/\\") + 1)<<"'");
+      monindex.insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
+      DEBUG_MSG("File added");
+      restoreDir();
+      DEBUG_MSG("Directory restored");
+    }
+    changeDirFromFilename(matrix_file.c_str());
+    monindex.query_file_of_file_whole_matrix(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
+    restoreDir();
   }
 
 
