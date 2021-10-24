@@ -40,7 +40,7 @@ class Index {
     uint32_t H;//Hll size (M+H=W)
     uint32_t maximal_remainder;//2^H-1
     uint32_t lF;//log2(F)
-    uint32_t fingerprint_range;//2^w
+    int32_t fingerprint_range;//2^w
     uint64_t mask_fingerprint;//2^(64-lf)-1
     uint64_t expected_gemome_size;
     uint64_t offsetUpdatekmer;
@@ -85,7 +85,7 @@ class Index {
 
     kmer str2numstrand(const string& str)const;
 
-    uint32_t get_fingerprint(uint64_t hashed)const;
+    int32_t get_fingerprint(uint64_t hashed)const;
 
     uint64_t revhash64 ( uint64_t x ) const;
 

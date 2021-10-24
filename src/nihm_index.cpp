@@ -216,15 +216,24 @@ kmer Index::str2numstrand(const string& str)const {
 
 
 
-uint32_t Index::get_fingerprint(uint64_t hashed)const {
-  uint32_t result;
+int32_t Index::get_fingerprint(uint64_t hashed)const {
+	//~ print_bin(hashed);
+  int32_t result;
   result = hashed&mask_M;//we keep the last bits for the minhash part
   uint32_t ll=asm_log2(hashed);//we compute the log of the hash
+   //~ cout<<ll<<endl;
   uint32_t size_zero_trail(64-ll-1);
+  //~ cout<<size_zero_trail<<endl;
   int remaining_nonzero=maximal_remainder-size_zero_trail;
+  //~ cout<<remaining_nonzero<<endl;
   remaining_nonzero=max(0,remaining_nonzero);
+  
+   //~ cout<<remaining_nonzero<<endl;
+   //~ cin.get();
   // if the log is too high can cannont store it on H bit here we sature
   result+=remaining_nonzero<<M;// we concatenant the hyperloglog part with the minhash part
+  //~ print_bin(result,W);
+  //~ cin.get();
   return result;
 }
 
@@ -259,10 +268,13 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
     Index::update_kmer_RC(RC_kmer,reference[i+K-1]);
     kmer canon(min(S_kmer,RC_kmer));//Kmer min, the one selected
     uint64_t hashed=revhash64(canon);
-    uint32_t bucket_id(unrevhash64(canon)>>(64-lF));//Which Bucket 
-    hashed=get_fingerprint(hashed);
-    if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == -1) {
-      sketch[bucket_id]=hashed;
+    uint64_t bucket_id(unrevhash64(canon)>>(64-lF));//Which Bucket 
+    int32_t fp=get_fingerprint(hashed);
+    //MAXHASH
+	//~ if(sketch[bucket_id] < fp or sketch[bucket_id]<0) {
+	//MINHASH
+    if(sketch[bucket_id] > fp or sketch[bucket_id]==-1) {
+      sketch[bucket_id]=fp;
     }
   }
 }
@@ -270,29 +282,29 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
 
 
 //HERE we only select the minimal hashes without computing the HMH fingerprint
-void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketch)const{
-  if(sketch.size()!=F) {
-    sketch.resize(F,-1);
-  }
-  kmer S_kmer(Index::str2numstrand(reference.substr(0,K-1)));
-  kmer RC_kmer(Index::rcb(S_kmer));
-  for(uint i(0);i+K<reference.size();++i) {
-    Index::update_kmer(S_kmer,reference[i+K-1]);
-    Index::update_kmer_RC(RC_kmer,reference[i+K-1]);
-    kmer canon(min(S_kmer,RC_kmer));
-    uint64_t hashed=revhash64(canon);
-    uint32_t bucket_id(unrevhash64(canon)>>(64-lF));
-    if((uint64_t)sketch[bucket_id]<hashed || sketch[bucket_id] == (uint64_t)-1) {
-      sketch[bucket_id]=hashed;
-    }
-  }
-}
+//~ void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketch)const{
+  //~ if(sketch.size()!=F) {
+    //~ sketch.resize(F,-1);
+  //~ }
+  //~ kmer S_kmer(Index::str2numstrand(reference.substr(0,K-1)));
+  //~ kmer RC_kmer(Index::rcb(S_kmer));
+  //~ for(uint i(0);i+K<reference.size();++i) {
+    //~ Index::update_kmer(S_kmer,reference[i+K-1]);
+    //~ Index::update_kmer_RC(RC_kmer,reference[i+K-1]);
+    //~ kmer canon(min(S_kmer,RC_kmer));
+    //~ uint64_t hashed=revhash64(canon);
+    //~ uint32_t bucket_id(unrevhash64(canon)>>(64-lF));
+    //~ if((uint64_t)sketch[bucket_id]>hashed || sketch[bucket_id] == (uint64_t)-1) {
+      //~ sketch[bucket_id]=hashed;
+    //~ }
+  //~ }
+//~ }
 
 
 
 void Index::insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id) {
-  for(uint i(0);i<F;++i) {
-    if((uint32_t)sketch[i]<fingerprint_range and sketch[i]>=0) {
+  for(int i(0);i<F;++i) {
+    if(sketch[i]<fingerprint_range and sketch[i]>=(int)0) {
       omp_set_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
       Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
       omp_unset_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
@@ -379,13 +391,10 @@ void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
   while(not in.eof()) {
     Biogetline(&in,ref,type);
     if(ref.size()>=K) {
-        compute_sketch_kmer(ref,kmer_sketch);
+        compute_sketch(ref,sketch);
     }
     ref.clear();
   }   
-  for(uint i(0);i<F;++i) {
-    sketch[i]=get_fingerprint(kmer_sketch[i]);
-  }
   insert_sketch(sketch,identifier);
 }
 
@@ -399,7 +408,7 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     cout << "Unable to open the file '" << filestr << "'" << endl;
     exit(0);
   }
-#pragma omp parallel
+//~ #pragma omp parallel
 {
     string ref;
     uint32_t id;
@@ -436,27 +445,25 @@ void Index::query_file_whole(const string& filestr) {
   char type=get_data_type(filestr);
   zstr::ifstream in(filestr);
   string ref;
-  vector<uint64_t> kmer_sketch;
   vector<int32_t> sketch(F,-1);
   while(not in.eof()){
     Biogetline(&in,ref,type);
     if(ref.size()>K){
-      compute_sketch_kmer(ref,kmer_sketch);
+      compute_sketch(ref,sketch);
     }
 
   }   
-  for(uint i(0);i<F;++i) {
-    sketch[i]=get_fingerprint(kmer_sketch[i]);
-  }
+
   auto out(query_sketch(sketch));
   output_query(out,filestr);
 }
+//~ atomic<uint64_t> sum41(0),denom(1);
 
 
 
 void Index::query_file_of_file_whole(const string& filestr) {
   zstr::ifstream in(filestr);
-#pragma omp parallel
+//~ #pragma omp parallel
 {
   string ref;
   while(not in.eof()){
@@ -471,7 +478,9 @@ void Index::query_file_of_file_whole(const string& filestr) {
     ref.clear();
   }
 }
+//~ cout<<sum41/denom<<endl;
 }
+
 
 
 
@@ -479,18 +488,26 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
   if(pretty_printing){
     #pragma omp critical (outputfile)
     {
+		
       *outfile<<queryname<<"\n";
       for(uint i(0);i<toprint.size();++i){
         *outfile<<filenames[toprint[i].second]<<" "<<toprint[i].first<<'\n';
+        //~ if(toprint[i].first!=F){
+			//~ sum41+=toprint[i].first;
+			//~ denom++;
+		//~ }
       }
+      
     }
   }else{
     #pragma omp critical (outputfile)
     {
       *outfile<<queryname<<"\n";
-      *outfile<<(uint32_t)toprint.size();
+      uint32_t size(toprint.size());
+      outfile->write(reinterpret_cast<const char*>(&(size)), sizeof(size));
       for(uint i(0);i<toprint.size();++i){
-        *outfile<<toprint[i].second<<toprint[i].first;
+		 outfile->write(reinterpret_cast<const char*>(&(toprint[i].second)), sizeof(toprint[i].second));
+		 outfile->write(reinterpret_cast<const char*>(&(toprint[i].first)), sizeof(toprint[i].first));
       }
     }
   } 
@@ -501,9 +518,9 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 query_output Index::query_sketch(const vector<int32_t>& sketch)const {
     query_output result;
      if(lF<=7){
-        uint16_t counts[genome_numbers]={0};
-        for(uint i(0);i<F;++i){
-            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+        uint8_t counts[genome_numbers]={0};
+        for(int i(0);i<F;++i){
+            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                   counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                 }
@@ -516,8 +533,8 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
         }
       }else if(lF<=15){
         uint16_t counts[genome_numbers]={0};
-        for(uint i(0);i<F;++i){
-            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+        for(int i(0);i<F;++i){
+            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                   counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                 }
@@ -530,8 +547,8 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
         }
     }else{
         uint32_t counts[genome_numbers]={0};
-        for(uint i(0);i<F;++i){
-            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>0){
+        for(int i(0);i<F;++i){
+            if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                     counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
                 }
@@ -564,17 +581,14 @@ void Index::query_file_whole_matrix(const string& filestr) {
   char type=get_data_type(filestr);
   zstr::ifstream in(filestr);
   string ref;
-  vector<uint64_t> kmer_sketch;
   vector<int32_t> sketch(F,-1);
   while(not in.eof()){
     Biogetline(&in,ref,type);
     if(ref.size()>K){
-      compute_sketch_kmer(ref,kmer_sketch);
+      compute_sketch(ref,sketch);
     }
   }
-  for(uint i(0);i<F;++i) {
-    sketch[i]=get_fingerprint(kmer_sketch[i]);
-  }
+
   auto out(query_sketch(sketch));
   DEBUG_MSG("Sending out in :'"<<filestr<<"'");
   output_matrix(out,filestr);
