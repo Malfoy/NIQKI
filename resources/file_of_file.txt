@@ -1,0 +1,10 @@
+ecoli01p.fa.gz
+ecoli02p.fa.gz
+ecoli03p.fa.gz
+ecoli04p.fa.gz
+ecoli05p.fa.gz
+ecoli06p.fa.gz
+ecoli07p.fa.gz
+ecoli08p.fa.gz
+ecoli09p.fa.gz
+ecoli10p.fa.gz
