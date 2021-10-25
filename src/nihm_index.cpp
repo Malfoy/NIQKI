@@ -310,7 +310,7 @@ void Index::insert_file_lines(const string& filestr) {
     string ref,header;
     uint32_t id;
     while(not in.eof()) {
-      #pragma omp critical (in)
+      #pragma omp critical (input)
       {
         Biogetline(&in,ref,type,header);
       }
@@ -338,7 +338,7 @@ void Index::query_file_lines(const string& filestr)const {
    {
     string ref,head;
     while(not in.eof()) {
-      #pragma omp critical (in)
+      #pragma omp critical (input)
       {
         Biogetline(&in,ref,type);
       }
@@ -393,7 +393,7 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     uint32_t id;
     while(not in.eof()) {
       bool go=false;
-      #pragma omp critical
+      #pragma omp critical (genome_numbers)
       {
         getline(in,ref);
         DEBUG_MSG("Getline from file :'"<<filestr<<"' = '"<<ref<<"'");
@@ -407,6 +407,7 @@ void Index::insert_file_of_file_whole(const string& filestr) {
             go=true;
           }
         }
+        ref.clear();
       }
       if(go) {
         DEBUG_MSG("Adding file :'"<<ref<<"'");
@@ -573,6 +574,8 @@ void Index::query_file_whole_matrix(const string& filestr) {
   output_matrix(out,filestr);
 }
 
+
+
 void Index::query_file_of_file_whole_matrix(const string& filestr) {
   //TODO LE HEADER
   *outfile<<"##Names"<<"\t";
@@ -698,7 +701,7 @@ void Index::Download_NCBI_fof(const string& fofncbi){
   uint32_t id;
   while(not in.eof()){
     
-    #pragma omp critical (in)
+    #pragma omp critical (input)
     {
       getline(in,ref);
     }
