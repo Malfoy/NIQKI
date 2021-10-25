@@ -393,11 +393,13 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     uint32_t id;
     while(not in.eof()) {
       bool go=false;
-      #pragma omp critical (genome_numbers)
+      #pragma omp critical (input)
       {
         getline(in,ref);
+      }
         DEBUG_MSG("Getline from file :'"<<filestr<<"' = '"<<ref<<"'");
-
+      #pragma omp critical (genome_numbers)
+      {
         if(ref.size()>2){
           if(exists_test(ref)) {
             id=genome_numbers;
@@ -407,13 +409,14 @@ void Index::insert_file_of_file_whole(const string& filestr) {
             go=true;
           }
         }
-        ref.clear();
       }
+      
       if(go) {
         DEBUG_MSG("Adding file :'"<<ref<<"'");
         insert_file_whole(ref,id);
         DEBUG_MSG("File: '"<<ref<<"' added");
       }
+      ref.clear();
     }
   }
 }
