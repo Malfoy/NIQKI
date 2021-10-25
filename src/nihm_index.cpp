@@ -281,30 +281,9 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
 
 
 
-//HERE we only select the minimal hashes without computing the HMH fingerprint
-//~ void Index::compute_sketch_kmer(const string& reference, vector<uint64_t>& sketch)const{
-  //~ if(sketch.size()!=F) {
-    //~ sketch.resize(F,-1);
-  //~ }
-  //~ kmer S_kmer(Index::str2numstrand(reference.substr(0,K-1)));
-  //~ kmer RC_kmer(Index::rcb(S_kmer));
-  //~ for(uint i(0);i+K<reference.size();++i) {
-    //~ Index::update_kmer(S_kmer,reference[i+K-1]);
-    //~ Index::update_kmer_RC(RC_kmer,reference[i+K-1]);
-    //~ kmer canon(min(S_kmer,RC_kmer));
-    //~ uint64_t hashed=revhash64(canon);
-    //~ uint32_t bucket_id(unrevhash64(canon)>>(64-lF));
-    //~ if((uint64_t)sketch[bucket_id]>hashed || sketch[bucket_id] == (uint64_t)-1) {
-      //~ sketch[bucket_id]=hashed;
-    //~ }
-  //~ }
-//~ }
-
-
-
 void Index::insert_sketch(const vector<int32_t>& sketch,uint32_t genome_id) {
-  for(int i(0);i<F;++i) {
-    if(sketch[i]<fingerprint_range and sketch[i]>=(int)0) {
+  for(uint i(0);i<F;++i) {
+    if(sketch[i]<fingerprint_range and sketch[i]>=0) {
       omp_set_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
       Buckets[sketch[i]+i*fingerprint_range].push_back(genome_id);
       omp_unset_lock(&lock[(sketch[i]+i*fingerprint_range)%mutex_number]);
@@ -408,7 +387,7 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     cout << "Unable to open the file '" << filestr << "'" << endl;
     exit(0);
   }
-//~ #pragma omp parallel
+#pragma omp parallel
 {
     string ref;
     uint32_t id;
@@ -457,13 +436,16 @@ void Index::query_file_whole(const string& filestr) {
   auto out(query_sketch(sketch));
   output_query(out,filestr);
 }
-//~ atomic<uint64_t> sum41(0),denom(1);
+
+
+
+// atomic<uint64_t> sum41(0),denom(1);
 
 
 
 void Index::query_file_of_file_whole(const string& filestr) {
   zstr::ifstream in(filestr);
-//~ #pragma omp parallel
+#pragma omp parallel
 {
   string ref;
   while(not in.eof()){
@@ -478,9 +460,8 @@ void Index::query_file_of_file_whole(const string& filestr) {
     ref.clear();
   }
 }
-//~ cout<<sum41/denom<<endl;
+// cout<<(double)sum41/(denom*F)<<endl;
 }
-
 
 
 
@@ -488,16 +469,14 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
   if(pretty_printing){
     #pragma omp critical (outputfile)
     {
-		
       *outfile<<queryname<<"\n";
       for(uint i(0);i<toprint.size();++i){
         *outfile<<filenames[toprint[i].second]<<" "<<toprint[i].first<<'\n';
-        //~ if(toprint[i].first!=F){
-			//~ sum41+=toprint[i].first;
-			//~ denom++;
-		//~ }
+        // if(queryname!=filenames[toprint[i].second]){
+			  //  sum41+=toprint[i].first;
+			  //   denom++;
+		    // }
       }
-      
     }
   }else{
     #pragma omp critical (outputfile)
@@ -519,7 +498,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
     query_output result;
      if(lF<=7){
         uint8_t counts[genome_numbers]={0};
-        for(int i(0);i<F;++i){
+        for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                   counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
@@ -533,7 +512,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
         }
       }else if(lF<=15){
         uint16_t counts[genome_numbers]={0};
-        for(int i(0);i<F;++i){
+        for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                   counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
@@ -547,7 +526,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
         }
     }else{
         uint32_t counts[genome_numbers]={0};
-        for(int i(0);i<F;++i){
+        for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
                     counts[Buckets[sketch[i]+i*fingerprint_range][j]]++;
