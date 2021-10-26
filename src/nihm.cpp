@@ -395,7 +395,7 @@ int main(int argc, char * argv[]){
     changeDirFromFilename(matrix_file.c_str());
     //~ monindex.query_file_of_file_whole_matrix(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
     start= std::chrono::system_clock::now();
-    monindex.query_matrix();
+    //~ monindex.query_matrix();
     end= std::chrono::system_clock::now();
     elapsed_seconds = end - start;
 	cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
