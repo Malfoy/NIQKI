@@ -500,7 +500,6 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 void Index::query_range(uint32_t begin,uint32_t end)const {
 	uint size_batch(end-begin);
 	uint16_t counts[size_batch*genome_numbers]={0};
-	query_output result[size_batch];
 	
 	uint64_t i;
 	//FOREACH BUCKET
@@ -547,7 +546,6 @@ void Index::query_matrix()const {
 	}
 	*outfile<<"\n";
 	uint i;
-	//~ #pragma omp parallel for
 	for(i=0;i<genome_numbers;i+=bufferSize){
 		if(i+bufferSize>genome_numbers){
 			query_range(i,genome_numbers);
