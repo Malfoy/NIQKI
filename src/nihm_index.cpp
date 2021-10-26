@@ -369,7 +369,7 @@ void Index::insert_file_whole(const string& filestr,uint32_t identifier) {
   vector<int32_t> sketch(F,-1);
   while(not in.eof()) {
     Biogetline(&in,ref,type);
-    if(ref.size()>=K) {
+    if(ref.size()>K) {
         compute_sketch(ref,sketch);
     }
     ref.clear();
@@ -520,7 +520,7 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 				for(uint64_t j(0);j<Buckets[i].size();++j){
 					for(uint64_t k(0);k<target.size();++k){
 						#pragma omp atomic
-						counts[target[k]*genome_numbers+Buckets[i][j]]++;
+						counts[k*genome_numbers+Buckets[i][j]]++;
 					}
 				}
 			}
