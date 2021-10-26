@@ -381,7 +381,7 @@ int main(int argc, char * argv[]){
       cout << "Unable to open the file '" << matrix_file << "'" << endl;
     }
     if (!options[LIST] and !options[LISTLINES]) {
-		start= std::chrono::system_clock::now();
+	  start= std::chrono::system_clock::now();
       changeDirFromFilename(matrix_file.c_str());
       DEBUG_MSG("Creating the index from: '"<<matrix_file.substr(matrix_file.find_last_of("/\\") + 1)<<"'");
       monindex.insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));

@@ -503,7 +503,7 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 	
 	uint64_t i;
 	//FOREACH BUCKET
-	//~ #pragma omp parallel
+	#pragma omp parallel
 	{
 		vector<gid> target;
 		#pragma omp for
@@ -519,11 +519,7 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 				//COUNT HITS
 				for(uint64_t j(0);j<Buckets[i].size();++j){
 					for(uint64_t k(0);k<target.size();++k){
-						if(target[k]*genome_numbers+Buckets[i][j]<size_batch*genome_numbers){
-							counts[target[k]*genome_numbers+Buckets[i][j]]++;
-						}else{
-							cout<<"this should not happen"<<target[k]<<" "<<Buckets[i][j]<<" "<<size_batch<<endl;
-						}
+						counts[target[k]*genome_numbers+Buckets[i][j]]++;
 					}
 				}
 			}
@@ -542,6 +538,7 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 }
 
 
+
 void Index::query_matrix()const {
 	*outfile<<"##Names"<<"\t";
 	for(uint i(0);i<filenames.size();++i){
@@ -551,9 +548,9 @@ void Index::query_matrix()const {
 	uint i;
 	for(i=0;i<genome_numbers;i+=bufferSize){
 		if(i+bufferSize>genome_numbers){
-			//~ query_range(i,genome_numbers);
+			query_range(i,genome_numbers);
 		}else{
-			//~ query_range(i,i+bufferSize);
+			query_range(i,i+bufferSize);
 		}
 		
 	}
