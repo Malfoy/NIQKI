@@ -503,10 +503,10 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 	
 	uint64_t i;
 	//FOREACH BUCKET
-	#pragma omp parallel
+	//~ #pragma omp parallel
 	{
 		vector<gid> target;
-		#pragma omp for
+		//~ #pragma omp for
 		for( i=(0);i<fingerprint_range*F;++i){
 			target.clear();
 			// LOOK FOR QUERY GENOMES
@@ -519,6 +519,7 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 				//COUNT HITS
 				for(uint64_t j(0);j<Buckets[i].size();++j){
 					for(uint64_t k(0);k<target.size();++k){
+						//~ #pragma omp atomic
 						counts[target[k]*genome_numbers+Buckets[i][j]]++;
 					}
 				}
