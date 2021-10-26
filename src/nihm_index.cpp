@@ -551,9 +551,9 @@ void Index::query_matrix()const {
 	uint i;
 	for(i=0;i<genome_numbers;i+=bufferSize){
 		if(i+bufferSize>genome_numbers){
-			query_range(i,genome_numbers);
+			//~ query_range(i,genome_numbers);
 		}else{
-			query_range(i,i+bufferSize);
+			//~ query_range(i,i+bufferSize);
 		}
 		
 	}
