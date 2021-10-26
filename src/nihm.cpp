@@ -384,7 +384,7 @@ int main(int argc, char * argv[]){
 	  start= std::chrono::system_clock::now();
       changeDirFromFilename(matrix_file.c_str());
       DEBUG_MSG("Creating the index from: '"<<matrix_file.substr(matrix_file.find_last_of("/\\") + 1)<<"'");
-      monindex.insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
+      //~ monindex.insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
       DEBUG_MSG("File added");
       restoreDir();
       DEBUG_MSG("Directory restored");
