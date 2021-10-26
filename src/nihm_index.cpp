@@ -6,7 +6,7 @@
 
 
 using namespace std;
-const int bufferSize = 10000;
+const int bufferSize = 1000;
 
 
 
@@ -387,7 +387,7 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     cout << "Unable to open the file '" << filestr << "'" << endl;
     exit(0);
   }
-#pragma omp parallel
+//~ #pragma omp parallel
 {
     string ref;
     uint32_t id;
@@ -497,6 +497,69 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 }
 
 
+void Index::query_range(uint32_t begin,uint32_t end)const {
+	uint size_batch(end-begin);
+	uint16_t counts[size_batch*genome_numbers]={0};
+	query_output result[size_batch];
+	
+	uint64_t i;
+	//FOREACH BUCKET
+	#pragma omp parallel
+	{
+		vector<gid> target;
+		#pragma omp for
+		for( i=(0);i<fingerprint_range*F;++i){
+			target.clear();
+			// LOOK FOR QUERY GENOMES
+			for(uint64_t j(0);j<Buckets[i].size();++j){
+				if(Buckets[i][j]<end and Buckets[i][j]>= begin){
+					target.push_back(Buckets[i][j]-begin);
+				}
+			}
+			if(not target.empty()){
+				//COUNT HITS
+				for(uint64_t j(0);j<Buckets[i].size();++j){
+					for(uint64_t k(0);k<target.size();++k){
+						#pragma omp atomic
+						counts[target[k]*genome_numbers+Buckets[i][j]]++;
+					}
+				}
+			}
+		}
+	}
+	query_output toprint;
+	for(uint i(0);i<size_batch;i++){
+		toprint.clear();
+		for(uint j(0);j<genome_numbers;j++){
+			if(counts[j+i*genome_numbers]>=min_score){
+				toprint.push_back({counts[j+i*genome_numbers],j});
+			}
+		}
+		output_matrix(toprint,filenames[i+begin]);
+	}
+}
+
+
+void Index::query_matrix()const {
+	*outfile<<"##Names"<<"\t";
+	for(uint i(0);i<filenames.size();++i){
+		*outfile<<filenames[i]<<"\t";
+	}
+	*outfile<<"\n";
+	uint i;
+	//~ #pragma omp parallel for
+	for(i=0;i<genome_numbers;i+=bufferSize){
+		if(i+bufferSize>genome_numbers){
+			query_range(i,genome_numbers);
+		}else{
+			query_range(i,i+bufferSize);
+		}
+		
+	}
+}
+
+
+
 
 query_output Index::query_sketch(const vector<int32_t>& sketch)const {
     query_output result;
@@ -580,7 +643,6 @@ void Index::query_file_whole_matrix(const string& filestr) {
 
 
 void Index::query_file_of_file_whole_matrix(const string& filestr) {
-  //TODO LE HEADER
   *outfile<<"##Names"<<"\t";
   for(uint i(0);i<filenames.size();++i){
     *outfile<<filenames[i]<<"\t";
@@ -598,24 +660,27 @@ void Index::query_file_of_file_whole_matrix(const string& filestr) {
     }
     if(exists_test(ref)){
       query_file_whole_matrix(ref);
-      *outfile<<endl;
     }
     ref.clear();
   }
 }
 }
 
+
+
 void Index::output_matrix(const query_output& toprint,const string& queryname)const{
-#pragma omp critical (outputfile)
-  {
+
     double buffer[genome_numbers]={0};
     for(uint i(0);i<toprint.size();++i){
       buffer[toprint[i].second]=((double)toprint[i].first)/F;
     }
+    #pragma omp critical (outputfile)
+   {
     *outfile<<queryname<<"\t";
     for(uint i(0);i<genome_numbers;++i){
       *outfile<<buffer[i]<<"\t";
     }
+    *outfile<<"\n";
   }
 }
 /***********************************************************************************************/

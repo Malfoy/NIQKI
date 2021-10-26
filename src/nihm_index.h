@@ -189,6 +189,10 @@ class Index {
     char get_data_type(const string& filename)const;
 
     void dump_index_disk(const string& filestr)const ;
+    
+    void query_matrix()const;
+    
+    void query_range(uint32_t begin,uint32_t end)const;
 
 
 };

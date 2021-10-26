@@ -390,6 +390,7 @@ int main(int argc, char * argv[]){
     }
     changeDirFromFilename(matrix_file.c_str());
     monindex.query_file_of_file_whole_matrix(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
+    monindex.query_matrix();
     restoreDir();
   }
 
