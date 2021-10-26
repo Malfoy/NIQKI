@@ -387,7 +387,7 @@ void Index::insert_file_of_file_whole(const string& filestr) {
     cout << "Unable to open the file '" << filestr << "'" << endl;
     exit(0);
   }
-//~ #pragma omp parallel
+#pragma omp parallel
 {
     string ref;
     uint32_t id;
