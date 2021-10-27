@@ -6,7 +6,7 @@
 
 
 using namespace std;
-const int bufferSize = 1000;
+const int bufferSize = 10000;
 
 
 
@@ -191,6 +191,7 @@ kmer Index::rcb(kmer min)const {
   }
   return res;
 }
+
 
 
 //UTILS
@@ -498,13 +499,9 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 
 
 void Index::query_range(uint32_t begin,uint32_t end)const {
-	//~ cout<<"query range"<<endl;
 	uint size_batch(end-begin);
-	//~ cout<<size_batch<<endl;
-	//~ cout<<genome_numbers<<" "<<filenames.size()<<endl;
 	uint16_t *counts=new uint16_t[size_batch*genome_numbers];
 	memset(counts, 0, size_batch*genome_numbers*sizeof(*counts));
-	//~ cout<<"alloc"<<endl;
 	
 	
 	//FOREACH BUCKET
@@ -513,39 +510,30 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 		vector<gid> target;
 		#pragma omp for
 		for(uint64_t i=0;i<fingerprint_range*F;++i){
-			//~ cout<<i<<endl;
 			target.clear();
 			// LOOK FOR QUERY GENOMES
 			for(uint64_t j(0);j<Buckets[i].size();++j){
 				if(Buckets[i][j]<end and Buckets[i][j]>= begin){
-					//~ cout<<"target found"<<endl;
 					target.push_back(Buckets[i][j]-begin);
 				}
-				//~ cout<<"end target look"<<endl;
 			}
-			//~ cout<<"end target scan"<<endl;
 			if(not target.empty()){
-				//~ cout<<"go count"<<endl;
 				//COUNT HITS
 				for(uint64_t j(0);j<Buckets[i].size();++j){
 					for(uint64_t k(0);k<target.size();++k){
 						#pragma omp atomic
-						counts[target[k]*genome_numbers+Buckets[i][j]]++;
-						//~ cout<<k<<endl;
+						counts[Buckets[i][j]*size_batch+target[k]]++;
 					}
-					//~ cout<<"one bucket counted"<<endl;
 				}
 			}
-			//~ cout<<"end count"<<endl;
 		}
-		//~ cout<<"end buckets"<<endl;
 	}
 	query_output toprint;
 	for(uint i(0);i<size_batch;i++){
 		toprint.clear();
 		for(uint j(0);j<genome_numbers;j++){
-			if(counts[j+i*genome_numbers]>=min_score){
-				toprint.push_back({counts[j+i*genome_numbers],j});
+			if(counts[j*size_batch+i]>=min_score){
+				toprint.push_back({counts[j*size_batch+i],j});
 			}
 		}
 		output_matrix(toprint,filenames[i+begin]);
