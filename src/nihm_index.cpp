@@ -498,8 +498,11 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 
 
 void Index::query_range(uint32_t begin,uint32_t end)const {
+	cout<<"query range"<<endl;
 	uint size_batch(end-begin);
+	cout<<size_batch<<endl;
 	uint16_t counts[size_batch*genome_numbers]={0};
+	cout<<"alloc"<<endl;
 	
 	
 	//FOREACH BUCKET
@@ -507,7 +510,8 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 	{
 		vector<gid> target;
 		//~ #pragma omp for
-		for( uint64_t i=0;i<fingerprint_range*F;++i){
+		for(uint64_t i=0;i<fingerprint_range*F;++i){
+			cout<<i<<endl;
 			target.clear();
 			// LOOK FOR QUERY GENOMES
 			for(uint64_t j(0);j<Buckets[i].size();++j){
