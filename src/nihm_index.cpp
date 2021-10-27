@@ -512,19 +512,27 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 			// LOOK FOR QUERY GENOMES
 			for(uint64_t j(0);j<Buckets[i].size();++j){
 				if(Buckets[i][j]<end and Buckets[i][j]>= begin){
+					cout<<"target found"<<endl;
 					target.push_back(Buckets[i][j]-begin);
 				}
+				cout<<"end target look"<<endl;
 			}
+			cout<<"end target scan"<<endl;
 			if(not target.empty()){
+				cout<<"go count"<<endl;
 				//COUNT HITS
 				for(uint64_t j(0);j<Buckets[i].size();++j){
 					for(uint64_t k(0);k<target.size();++k){
 						//~ #pragma omp atomic
 						//~ counts[target[k]*genome_numbers+Buckets[i][j]]++;
+						cout<<k<<endl;
 					}
+					cout<<"one bucket counted"<<endl;
 				}
 			}
+			cout<<"end count"<<endl;
 		}
+		cout<<"end buckets"<<endl;
 	}
 	query_output toprint;
 	for(uint i(0);i<size_batch;i++){
@@ -549,9 +557,9 @@ void Index::query_matrix()const {
 	uint i;
 	for(i=0;i<genome_numbers;i+=bufferSize){
 		if(i+bufferSize>genome_numbers){
-			//~ query_range(i,genome_numbers);
+			query_range(i,genome_numbers);
 		}else{
-			//~ query_range(i,i+bufferSize);
+			query_range(i,i+bufferSize);
 		}
 		
 	}
