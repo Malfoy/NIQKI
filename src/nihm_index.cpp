@@ -501,13 +501,13 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 	uint size_batch(end-begin);
 	uint16_t counts[size_batch*genome_numbers]={0};
 	
-	uint64_t i;
+	
 	//FOREACH BUCKET
 	//~ #pragma omp parallel
 	{
 		vector<gid> target;
 		//~ #pragma omp for
-		for( i=(0);i<fingerprint_range*F;++i){
+		for( uint64_t i=0;i<fingerprint_range*F;++i){
 			target.clear();
 			// LOOK FOR QUERY GENOMES
 			for(uint64_t j(0);j<Buckets[i].size();++j){
@@ -549,9 +549,9 @@ void Index::query_matrix()const {
 	uint i;
 	for(i=0;i<genome_numbers;i+=bufferSize){
 		if(i+bufferSize>genome_numbers){
-			query_range(i,genome_numbers);
+			//~ query_range(i,genome_numbers);
 		}else{
-			query_range(i,i+bufferSize);
+			//~ query_range(i,i+bufferSize);
 		}
 		
 	}
