@@ -520,7 +520,7 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 				for(uint64_t j(0);j<Buckets[i].size();++j){
 					for(uint64_t k(0);k<target.size();++k){
 						//~ #pragma omp atomic
-						counts[target[k]*genome_numbers+Buckets[i][j]]++;
+						//~ counts[target[k]*genome_numbers+Buckets[i][j]]++;
 					}
 				}
 			}
@@ -530,11 +530,11 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 	for(uint i(0);i<size_batch;i++){
 		toprint.clear();
 		for(uint j(0);j<genome_numbers;j++){
-			if(counts[j+i*genome_numbers]>=min_score){
-				toprint.push_back({counts[j+i*genome_numbers],j});
-			}
+			//~ if(counts[j+i*genome_numbers]>=min_score){
+				//~ toprint.push_back({counts[j+i*genome_numbers],j});
+			//~ }
 		}
-		output_matrix(toprint,filenames[i+begin]);
+		//~ output_matrix(toprint,filenames[i+begin]);
 	}
 }
 
