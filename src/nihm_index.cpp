@@ -498,57 +498,59 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 
 
 void Index::query_range(uint32_t begin,uint32_t end)const {
-	cout<<"query range"<<endl;
+	//~ cout<<"query range"<<endl;
 	uint size_batch(end-begin);
-	cout<<size_batch<<endl;
-	cout<<genome_numbers<<" "<<filenames.size()<<endl;
-	uint16_t counts[size_batch*genome_numbers]={0};
-	cout<<"alloc"<<endl;
+	//~ cout<<size_batch<<endl;
+	//~ cout<<genome_numbers<<" "<<filenames.size()<<endl;
+	uint16_t *counts=new uint16_t[size_batch*genome_numbers];
+	memset(counts, 0, size_batch*genome_numbers*sizeof(*counts));
+	//~ cout<<"alloc"<<endl;
 	
 	
 	//FOREACH BUCKET
-	//~ #pragma omp parallel
+	#pragma omp parallel
 	{
 		vector<gid> target;
-		//~ #pragma omp for
+		#pragma omp for
 		for(uint64_t i=0;i<fingerprint_range*F;++i){
-			cout<<i<<endl;
+			//~ cout<<i<<endl;
 			target.clear();
 			// LOOK FOR QUERY GENOMES
 			for(uint64_t j(0);j<Buckets[i].size();++j){
 				if(Buckets[i][j]<end and Buckets[i][j]>= begin){
-					cout<<"target found"<<endl;
+					//~ cout<<"target found"<<endl;
 					target.push_back(Buckets[i][j]-begin);
 				}
-				cout<<"end target look"<<endl;
+				//~ cout<<"end target look"<<endl;
 			}
-			cout<<"end target scan"<<endl;
+			//~ cout<<"end target scan"<<endl;
 			if(not target.empty()){
-				cout<<"go count"<<endl;
+				//~ cout<<"go count"<<endl;
 				//COUNT HITS
 				for(uint64_t j(0);j<Buckets[i].size();++j){
 					for(uint64_t k(0);k<target.size();++k){
-						//~ #pragma omp atomic
-						//~ counts[target[k]*genome_numbers+Buckets[i][j]]++;
-						cout<<k<<endl;
+						#pragma omp atomic
+						counts[target[k]*genome_numbers+Buckets[i][j]]++;
+						//~ cout<<k<<endl;
 					}
-					cout<<"one bucket counted"<<endl;
+					//~ cout<<"one bucket counted"<<endl;
 				}
 			}
-			cout<<"end count"<<endl;
+			//~ cout<<"end count"<<endl;
 		}
-		cout<<"end buckets"<<endl;
+		//~ cout<<"end buckets"<<endl;
 	}
 	query_output toprint;
 	for(uint i(0);i<size_batch;i++){
 		toprint.clear();
 		for(uint j(0);j<genome_numbers;j++){
-			//~ if(counts[j+i*genome_numbers]>=min_score){
-				//~ toprint.push_back({counts[j+i*genome_numbers],j});
-			//~ }
+			if(counts[j+i*genome_numbers]>=min_score){
+				toprint.push_back({counts[j+i*genome_numbers],j});
+			}
 		}
-		//~ output_matrix(toprint,filenames[i+begin]);
+		output_matrix(toprint,filenames[i+begin]);
 	}
+	delete []counts;
 }
 
 
@@ -576,7 +578,8 @@ void Index::query_matrix()const {
 query_output Index::query_sketch(const vector<int32_t>& sketch)const {
     query_output result;
      if(lF<=7){
-        uint8_t counts[genome_numbers]={0};
+        uint8_t *counts=new uint8_t[genome_numbers];
+		memset(counts, 0, genome_numbers*sizeof(*counts));
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -589,8 +592,10 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
                 result.push_back({counts[i],i});
             }
         }
+        delete []counts;
       }else if(lF<=15){
-        uint16_t counts[genome_numbers]={0};
+        uint16_t *counts=new uint16_t[genome_numbers];
+		memset(counts, 0, genome_numbers*sizeof(*counts));
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -603,8 +608,10 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
                 result.push_back({counts[i],i});
             }
         }
+        delete []counts;
     }else{
-        uint32_t counts[genome_numbers]={0};
+        uint32_t *counts=new uint32_t[genome_numbers];
+		memset(counts, 0, genome_numbers*sizeof(*counts));
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -617,6 +624,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
                 result.push_back({counts[i],i});
             }
         }
+        delete []counts;
     }
     
     sort(result.begin(),result.end(),greater<pair<uint32_t,uint32_t>>());
@@ -682,7 +690,8 @@ void Index::query_file_of_file_whole_matrix(const string& filestr) {
 
 void Index::output_matrix(const query_output& toprint,const string& queryname)const{
 
-    double buffer[genome_numbers]={0};
+    double *buffer=new double[genome_numbers];
+	memset(buffer, 0, genome_numbers*sizeof(*buffer));
     for(uint i(0);i<toprint.size();++i){
       buffer[toprint[i].second]=((double)toprint[i].first)/F;
     }
@@ -693,6 +702,7 @@ void Index::output_matrix(const query_output& toprint,const string& queryname)co
       *outfile<<buffer[i]<<"\t";
     }
     *outfile<<"\n";
+    delete []buffer;
   }
 }
 /***********************************************************************************************/
