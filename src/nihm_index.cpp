@@ -501,6 +501,7 @@ void Index::query_range(uint32_t begin,uint32_t end)const {
 	cout<<"query range"<<endl;
 	uint size_batch(end-begin);
 	cout<<size_batch<<endl;
+	cout<<genome_numbers<<" "<<filenames.size()<<endl;
 	uint16_t counts[size_batch*genome_numbers]={0};
 	cout<<"alloc"<<endl;
 	
