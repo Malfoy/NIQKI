@@ -1,7 +1,8 @@
 #ifndef __NIHM_INDEX_H__
 #define __NIHM_INDEX_H__
 
-
+#include "codecfactory.h" /* To use Compression Lib */
+#include "intersection.h"
 
 #include <stdio.h>
 #include <fstream>
@@ -68,6 +69,8 @@ class Index {
      * \brief Destructor.
      */
     ~Index();
+
+    void compress_index() const{
 
     uint64_t nuc2int(char c) const;
 
