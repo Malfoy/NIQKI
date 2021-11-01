@@ -1,8 +1,8 @@
 #ifndef __NIHM_INDEX_H__
 #define __NIHM_INDEX_H__
 
-#include "codecfactory.h" /* To use Compression Lib */
-#include "intersection.h"
+#include <codecfactory.h> /* To use Compression Lib */
+#include <intersection.h>
 
 #include <stdio.h>
 #include <fstream>
