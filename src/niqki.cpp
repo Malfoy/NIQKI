@@ -1,4 +1,4 @@
-#include "nihm_index.h"
+#include "niqki_index.h"
 #include "optionparser.h"
 #include "common.h"
 
@@ -131,7 +131,7 @@ const option::Descriptor usage[] = {
  {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Output***"},
   {OUTPUT, 0, "O", "output", Arg::NonEmpty,
     "  --output, -O <filename> "
-      "\tOutput file (nihmOutput.gz)"
+      "\tOutput file (niqkiOutput.gz)"
   },
 
      {MIN,  0, "J" , "minjac"  ,Arg::NonEmpty,
@@ -279,10 +279,10 @@ int main(int argc, char * argv[]){
     return EXIT_FAILURE;
   }
   if (options[OUTPUT]) {
-    out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "nihmOutput.gz";
+    out_file = options[OUTPUT] ? (options[OUTPUT].last()->arg) : "niqkiOutput.gz";
     DEBUG_MSG("Output file name = " << out_file);
   } else {
-    out_file="nihmOutput.gz";
+    out_file="niqkiOutput.gz";
   }
   cout << "+-------------------------------------------------------------------+" << endl;
   cout << "|                            Informations                           |" << endl;
@@ -416,7 +416,7 @@ int main(int argc, char * argv[]){
   /* Display the ASCII art logo of the program. */
   /**********************************************/
   if (options[LOGO]) {
-    string logo_name="../resources/nihm.ascii";    
+    string logo_name="../resources/niqki.ascii";    
     ifstream logo;
     string line;
     logo.open(logo_name);
