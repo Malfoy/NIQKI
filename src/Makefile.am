@@ -8,7 +8,7 @@ common_SOURCES = \
   genome.h genome.cpp \
   niqki_index.h niqki_index.cpp
 
-nihm_SOURCES = \
+niqki_SOURCES = \
   $(common_SOURCES) \
   optionparser.h \
   niqki.cpp
