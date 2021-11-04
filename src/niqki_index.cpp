@@ -1,6 +1,6 @@
 #include "strict_fstream.hpp"
 #include "zstr.hpp"
-#include "nihm_index.h"
+#include "niqki_index.h"
 #include "common.h"
 
 
@@ -13,7 +13,7 @@ const int bufferSize = 10000;
 
 
 
-Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const string ifilename="nihmOutput.gz", double min_fract=0.1) {
+Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const string ifilename="niqkiOutput.gz", double min_fract=0.1) {
   filename=ifilename;
   pretty_printing=false;
   lF=ilF;
