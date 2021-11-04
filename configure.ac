@@ -2,10 +2,10 @@
 # The first parameter is project name
 # second is version number
 # third is bug report address
-AC_INIT([nihm], [1.0])
+AC_INIT([niqki], [1.0])
 
 # Safety checks in case user overwritten --srcdir
-AC_CONFIG_SRCDIR([src/nihm.cpp])
+AC_CONFIG_SRCDIR([src/niqki.cpp])
 
 # Store the auxiliary build tools (e.g., install-sh, config.sub, config.guess)
 # in this dir (build-aux)
