@@ -1,4 +1,4 @@
-bin_PROGRAMS = nihm
+bin_PROGRAMS = niqki
 
 common_SOURCES = \
   common.h \
@@ -6,12 +6,12 @@ common_SOURCES = \
   strict_fstream.hpp \
   zstr_make_unique_polyfill.h \
   genome.h genome.cpp \
-  nihm_index.h nihm_index.cpp
+  niqki_index.h niqki_index.cpp
 
 nihm_SOURCES = \
   $(common_SOURCES) \
   optionparser.h \
-  nihm.cpp
+  niqki.cpp
 
 MOSTLYCLEANFILES=*~
 CLEANFILES=*~ $(noinst_SCRIPTS)
