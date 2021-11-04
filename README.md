@@ -1,5 +1,5 @@
 # NIQKI
-NIQKI stand for Next index to query kmer intersection using HyperMinhash, NIQKI
+NIQKI stand for Next Index to Query _K_-mer Intersection using HyperMinhash, NIQKI
 is an alignment-free and reference-free software which allows to index
 a large collection of similar genomes. NIQKI can also be applied to
 reads from unassembled genomes.
