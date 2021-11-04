@@ -110,6 +110,50 @@ uint64_t Index::nuc2int(char c)const {
 }
 
 
+void Index::select_best_H(const double genome_size){
+  double x(genome_size/F);
+  double best_size_interval(0);
+  for(uint try_h(2);try_h<7;try_h++) {
+    double size_interval(score_H(x,try_h));
+    if(size_interval>best_size_interval){
+      best_size_interval=size_interval;
+      H=try_h;
+    }
+  }
+  M=W-H;
+  cout<<"I chosed H="<<H<<endl;
+}
+
+
+
+
+
+
+double Index::score_H(const double x,const int try_h){
+  double epsilon = 0.02;
+  double try_m=W-try_h;
+  double ua=(((double)1-pow(1-epsilon,1/x))*pow(2,64));
+  double ia=log2(ua)+pow(2,try_h)-64;
+  double ja=ua*pow(2,try_m-64-ia+pow(2,try_h));
+  double ka;
+  if(ua<pow(2,64-pow(2,try_h)+1)){
+    ka=ua*pow(2,pow(2,try_h)-64-(W-try_h)-1);
+  }else{
+    ka=ia*pow(2,try_m)+ja;
+  }
+  double ub=((double)1-pow(epsilon,1/x))*pow(2,64);
+  double ib=log2(ub)+pow(2,try_h)-64;
+  double jb=ub*pow(2,try_m-64-ib+pow(2,try_h));
+  double kb;
+  if(ub<pow(2,64-pow(2,try_h)+1)){
+    kb=ub*pow(2,pow(2,try_h)-64-(W-try_h)-1);
+  }else{
+    kb=ib*pow(2,try_m)+jb;
+  }
+  return kb-ka;
+}
+
+
 string Index::kmer2str(uint64_t num)const {
   string res;
   uint64_t anc(1);

@@ -93,6 +93,7 @@ enum  optionIndex {
   LOGO,
   DOWNLAD,
   PRETTY,
+  GENOME_SIZE,
   HELP
 };
 
@@ -150,6 +151,10 @@ const option::Descriptor usage[] = {
     "  --word, -W <int> "
       "\tFingerprint size (12). Modify with caution, larger fingerprints enable faster queries with less false positive but increase EXPONENTIALY the overhead as the index count S*2^W cells. \v"
      },
+      {GENOME_SIZE,  0, "G" , "Genomes_sizes"  ,Arg::Numeric,
+    "  --Genomes_sizes, -G <int> "
+      "\tRought expectation of the genome sizes. \v"
+      },
   {HHL,  0, "H" , "HHL"  ,Arg::Numeric,
     "  --HHL, -H <int> "
       "\tSize of the hyperloglog section (4).  Modify with caution.\v"
@@ -260,6 +265,7 @@ int main(int argc, char * argv[]){
   DEBUG_MSG("W = " << W);
   min_fract = options[MIN] ? atof(options[MIN].last()->arg) : 0.1;
   DEBUG_MSG("min_fract = " << min_fract);
+  uint genomes_sizes = options[GENOME_SIZE] ? atoi(options[GENOME_SIZE].last()->arg) : 0;
 
   /************************************/
   /* Complain about unknown arguments */
@@ -282,6 +288,9 @@ int main(int argc, char * argv[]){
   cout << "|                            Informations                           |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
   Index monindex(F,K,W,H,out_file,min_fract);
+   if(genomes_sizes!=0){
+    monindex.select_best_H(genomes_sizes);
+  }
   if (options[PRETTY]){
     monindex.pretty_printing=true;
   } 

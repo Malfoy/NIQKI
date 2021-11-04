@@ -19,6 +19,7 @@
 #include <omp.h>
 #include "zstr.hpp"
 #include "genome.h"
+#include <math.h>
 
 
 
@@ -193,6 +194,10 @@ class Index {
     void query_matrix()const;
     
     void query_range(uint32_t begin,uint32_t end)const;
+
+    void select_best_H(const double genome_size);
+
+    double score_H(const double x,const int try_h);
 
 
 };
