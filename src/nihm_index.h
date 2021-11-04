@@ -1,9 +1,10 @@
 #ifndef __NIHM_INDEX_H__
 #define __NIHM_INDEX_H__
 
-#include <codecfactory.h> /* To use Compression Lib */
-#include <intersection.h>
-
+/*
+ * #include <codecfactory.h>  To use Compression Lib
+ * #include <intersection.h>
+*/
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
@@ -71,8 +72,10 @@ class Index {
      */
     ~Index();
 
-    void compress_index() const{
-
+    /*
+     * void compress_index() const{
+    */
+  
     uint64_t nuc2int(char c) const;
 
     string kmer2str(uint64_t num) const ;
