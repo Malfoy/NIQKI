@@ -6,6 +6,8 @@
 
 
 using namespace std;
+using namespace SIMDCompressionLib;
+
 const int bufferSize = 10000;
 
 
@@ -38,6 +40,18 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const 
 }
 
 
+void Index::compress_index(){
+    for(uint i(0);i<fingerprint_range*F;++i){
+        if(not Buckets[i].empty()){
+        vector<uint32_t> compressed_output(Buckets[i].size() + 1024);
+        size_t compressedsize = compressed_output.size();
+        codec.encodeArray(Buckets[i].data(), Buckets[i].size(), compressed_output.data(),compressedsize);
+        compressed_output.resize(compressedsize);
+        compressed_output.shrink_to_fit();
+        Buckets[i]=compressed_output;
+        }
+    }
+}
 
 //TODO UPDATE
 void Index::dump_index_disk(const string& filestr)const{
