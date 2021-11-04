@@ -86,7 +86,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = nihm$(EXEEXT)
+bin_PROGRAMS = niqki$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -99,10 +99,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__objects_1 = genome.$(OBJEXT) nihm_index.$(OBJEXT)
-am_nihm_OBJECTS = $(am__objects_1) nihm.$(OBJEXT)
-nihm_OBJECTS = $(am_nihm_OBJECTS)
-nihm_LDADD = $(LDADD)
+am__objects_1 = genome.$(OBJEXT) niqki_index.$(OBJEXT)
+am_niqki_OBJECTS = $(am__objects_1) niqki.$(OBJEXT)
+niqki_OBJECTS = $(am_niqki_OBJECTS)
+niqki_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -118,8 +118,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/config
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/genome.Po ./$(DEPDIR)/nihm.Po \
-	./$(DEPDIR)/nihm_index.Po
+am__depfiles_remade = ./$(DEPDIR)/genome.Po ./$(DEPDIR)/niqki.Po \
+	./$(DEPDIR)/niqki_index.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -146,8 +146,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(nihm_SOURCES)
-DIST_SOURCES = $(nihm_SOURCES)
+SOURCES = $(niqki_SOURCES)
+DIST_SOURCES = $(niqki_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -273,12 +273,12 @@ common_SOURCES = \
   strict_fstream.hpp \
   zstr_make_unique_polyfill.h \
   genome.h genome.cpp \
-  nihm_index.h nihm_index.cpp
+  niqki_index.h niqki_index.cpp
 
-nihm_SOURCES = \
+niqki_SOURCES = \
   $(common_SOURCES) \
   optionparser.h \
-  nihm.cpp
+  niqki.cpp
 
 MOSTLYCLEANFILES = *~
 CLEANFILES = *~ $(noinst_SCRIPTS)
@@ -360,9 +360,9 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
-nihm$(EXEEXT): $(nihm_OBJECTS) $(nihm_DEPENDENCIES) $(EXTRA_nihm_DEPENDENCIES) 
-	@rm -f nihm$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(nihm_OBJECTS) $(nihm_LDADD) $(LIBS)
+niqki$(EXEEXT): $(niqki_OBJECTS) $(niqki_DEPENDENCIES) $(EXTRA_niqki_DEPENDENCIES) 
+	@rm -f niqki$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(niqki_OBJECTS) $(niqki_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -371,8 +371,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/genome.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nihm.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nihm_index.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/niqki.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/niqki_index.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -526,8 +526,8 @@ clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/genome.Po
-	-rm -f ./$(DEPDIR)/nihm.Po
-	-rm -f ./$(DEPDIR)/nihm_index.Po
+	-rm -f ./$(DEPDIR)/niqki.Po
+	-rm -f ./$(DEPDIR)/niqki_index.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -574,8 +574,8 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/genome.Po
-	-rm -f ./$(DEPDIR)/nihm.Po
-	-rm -f ./$(DEPDIR)/nihm_index.Po
+	-rm -f ./$(DEPDIR)/niqki.Po
+	-rm -f ./$(DEPDIR)/niqki_index.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
