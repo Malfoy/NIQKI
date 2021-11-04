@@ -1,5 +1,5 @@
-#ifndef __NIHM_INDEX_H__
-#define __NIHM_INDEX_H__
+#ifndef __NIQKI_INDEX_H__
+#define __NIQKI_INDEX_H__
 
 /*
  * #include <codecfactory.h>  To use Compression Lib
