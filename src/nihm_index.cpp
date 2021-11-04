@@ -6,8 +6,9 @@
 
 
 using namespace std;
-using namespace SIMDCompressionLib;
-
+/*
+ * using namespace SIMDCompressionLib;
+*/
 const int bufferSize = 10000;
 
 
@@ -39,7 +40,7 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const 
   }
 }
 
-
+/*
 void Index::compress_index(){
     for(uint i(0);i<fingerprint_range*F;++i){
         if(not Buckets[i].empty()){
@@ -52,7 +53,7 @@ void Index::compress_index(){
         }
     }
 }
-
+*/
 //TODO UPDATE
 void Index::dump_index_disk(const string& filestr)const{
   zstr::ofstream out(filestr);
