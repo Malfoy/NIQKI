@@ -1,48 +1,85 @@
 # NIQKI
-NIQKI stand for Next Index to Query _K_-mer Intersection using HyperMinhash, NIQKI
-is an alignment-free and reference-free software which allows to index
-a large collection of similar genomes. NIQKI can also be applied to
-reads from unassembled genomes.
+NIQKI stand for Next Index to Query _K_-mer Intersection.
+
+NIQKI is an sketch based software (similar to Mash or Dashing) which can index the largest sequence collections. 
+
+Once the sketch index built, NIQKI can compare  query sequences to indexed sequences and output matches above given threshold.
+
+Using inversed indexes and well designed fingerprint NIQKI can be order of magnitudes faster on large instances than concurent approaches with comparable precision and memory usage.
 
 Documentation
 -------------
 
 Usage: `niqki [options]`
 
-1. Genomes list :
+1. Indexing  :
 
-    `--list`, `-l <file>`             Use the content of the given (raw formatted)
+`--index`, `-I <file>`             Input file of files to Index.
 
-    Example:
+Example:
 
-        niqki --list my_genomes.txt
+    niqki --index my_genomes.txt
+    
+`--indexlines,`, `-i <file>`             Input fa/fq where each line is a separate entry to Index.
 
-2. Change k-mer and HyperMinhash size
+Example:
 
-    `--kmer`, `-k <int>`         Set the value of paramter k to the given value.
-
-    `--w-size`, `-w <int>`       Set the value of parameter w to the given value.
-
-    Example:
-
-        niqki --kmer 30 or -k 30
-        niqki --w-size 8 or -w 8
-
-
-3. Optional usage :
-
-    `--query`, `-Q <file>`        Search the given `<file>` in the index and print the genomes distance with this sequence.
-
-    `--output`, `-o <pattern>`
-
-    Examples:
-
-        niqki --list my_genomes.txt --query my_genomes.txt
-        niqki --list my_genomes.txt --output /tmp/outPutNiqki
+    niqki --indexlines my_genomes.fa
         
-4. Other usage:
+2. Query  :
 
-    `--help`, `-h`                    Print usage and exit.
+`--query,`, `-Q <file>`             Input file of files to Query.
+
+Example:
+
+    niqki --query my_genomes.txt
+
+`--querylines,`, `-q <file>`             Input fa/fq where each line is a separate entry to Query.
+
+Example:
+
+    niqki --indexlines my_genomes.fa
+
+3. Change sketch parameters
+
+`--kmer`, `-K <int>`         Kmer size (31).
+    
+`--sketch,`, `-S <int>`        Set sketch size to 2^S (15).
+
+
+
+4. Change sketch advanced parameters
+
+`--word`, `-W <int>`                  Fingerprint size (12). Modify with caution, larger fingerprints enable queries with less false positive but increase
+                                    EXPONENTIALY the overhead as the index count S*2^W cells. 
+    
+`--Genomes_sizes`, `-G <int>`         Rought expectation of the genome sizes.
+
+`--HHL`, `-H <int>`                   Size of the hyperloglog section (4).  Modify with caution and prefer to use -G.
+
+5. Change output
+
+`--output`, `-O <filename>`           Output file (niqkiOutput.gz)
+
+`--minjac`, `-J <int> `               Minimal jaccard Index to report (0.1).
+                                    
+`--pretty`, `-P`                       Print a human-readable outfile. By default the outfile is in binary.
+        
+6. Other usage:
+
+`--dumpv`, `-D <filename>`             Dump the current index to the given file.
+  
+`--load`, `-L <filename>`             Load an index to the given file.
+
+
+`--indexdownload`, `-Iddl <filename>` Get a list of NCBI accesion to download and to put it in the index (experimental). This this post to get such a list  https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/#allcomplete
+ 
+`--matrix`  , `-M <filename>`            Index the inout file of file, query the index against itself and output the corresponging matrix distance
+
+
+`--logo`                           Print ASCII art logo, then exit.
+
+`--help`, `-h`                    Print usage and exit.
 
 
 Installation
