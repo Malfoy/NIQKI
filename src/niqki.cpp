@@ -103,7 +103,7 @@ const option::Descriptor usage[] = {
   {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Input***"},
   {LIST, 0, "I" , "index" ,Arg::NonEmpty,
     "  --index, -I <filename> "
-      "\tInput file of file to index.\v"
+      "\tInput file of files to Index.\v"
      },
   
    {QUERY, 0, "Q", "query"    , Arg::NonEmpty,
@@ -112,11 +112,11 @@ const option::Descriptor usage[] = {
       },
    {LISTLINES, 0, "i" , "indexlines" ,Arg::NonEmpty,
     "  --indexlines, -i <filename> "
-      "\tQuery fa/fq file where each line is a separate entry to index\v"
+      "\tQuery fa/fq file where each line is a separate entry to Index\v"
      },
      {QUERYLINES, 0, "l", "querylines"    , Arg::NonEmpty,
     "  --querylines, -q <filename> "
-      "\tInput fa/fq where each line is a separate entry to query\v"
+      "\tInput fa/fq where each line is a separate entry to Query\v"
       },
   {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Main parameters***"},
   {KMER,  0, "K" , "kmer"  ,Arg::Numeric,
@@ -136,7 +136,7 @@ const option::Descriptor usage[] = {
 
      {MIN,  0, "J" , "minjac"  ,Arg::NonEmpty,
     "  --minjac, -J <int> "
-      "\tMinimal jaccard indice to report (0.1).\v"
+      "\tMinimal jaccard Index to report (0.1).\v"
       },
    {PRETTY, 0, "P", "pretty", Arg::None,
     "  --pretty, -P "
@@ -144,12 +144,12 @@ const option::Descriptor usage[] = {
   },
   {MATRIX, 0, "M", "matrix", Arg::NonEmpty,
     "  --matrix, -M <filename> "
-      "\tOutput the matrix distance  to the given file."
+      "\tOutput the matrix distance to the given file."
   },
   {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Advanced parameters*** (You know what you are doing)"},
    {WORD,  0, "W" , "word"  ,Arg::Numeric,
     "  --word, -W <int> "
-      "\tFingerprint size (12). Modify with caution, larger fingerprints enable faster queries with less false positive but increase EXPONENTIALY the overhead as the index count S*2^W cells. \v"
+      "\tFingerprint size (12). Modify with caution, larger fingerprints enable queries with less false positive but increase EXPONENTIALY the overhead as the index count S*2^W cells. \v"
      },
       {GENOME_SIZE,  0, "G" , "Genomes_sizes"  ,Arg::Numeric,
     "  --Genomes_sizes, -G <int> "
@@ -157,7 +157,7 @@ const option::Descriptor usage[] = {
       },
   {HHL,  0, "H" , "HHL"  ,Arg::Numeric,
     "  --HHL, -H <int> "
-      "\tSize of the hyperloglog section (4).  Modify with caution.\v"
+      "\tSize of the hyperloglog section (4).  Modify with caution and prefer to use -G.\v"
       },
 {UNKNOWN, 0,"" , "" , Arg::Unknown,"\n***Index files***"},
   {DUMP, 0, "D", "dump", Arg::NonEmpty,
@@ -183,6 +183,7 @@ const option::Descriptor usage[] = {
       "\tPrint usage and exit." },
   {0,0,0,0,0,0}
 };
+
 
 
 option::Option *options = NULL, *buffer = NULL;
@@ -248,7 +249,7 @@ int main(int argc, char * argv[]){
   /* Check Help             options */
   /**********************************/
   if (options[HELP] || argc == 0) {
-    option::printUsage(clog, usage);
+    option::printUsage(clog, usage,160);
     return EXIT_SUCCESS;
   }
 
@@ -402,7 +403,6 @@ int main(int argc, char * argv[]){
 	  cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
     }
     changeDirFromFilename(matrix_file.c_str());
-    //~ monindex.query_file_of_file_whole_matrix(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
     start= std::chrono::system_clock::now();
     monindex.query_matrix();
     end= std::chrono::system_clock::now();
@@ -431,9 +431,10 @@ int main(int argc, char * argv[]){
   }
   cout << "+-----------------------------------+-------------------------------+" << endl;
   cout << "| k-mer size                        |" << setw(30) << setfill(' ') << K << " |" << endl
-       << "| F                                 |" << setw(30) << setfill(' ') << F << " |" << endl
-       << "| H                                 |" << setw(30) << setfill(' ') << H << " |" << endl
+       << "| S                                 |" << setw(30) << setfill(' ') << F << " |" << endl
+       << "| Number of fingerprints            |" << setw(30) << setfill(' ') << monindex.F<< " |" << endl
        << "| W                                 |" << setw(30) << setfill(' ') << W << " |" << endl
+       << "| H                                 |" << setw(30) << setfill(' ') << H << " |" << endl
        << "| Number of indexed genomes         |" << setw(30) << setfill(' ') << monindex.getNbGenomes() << " |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
 
