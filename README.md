@@ -1,5 +1,5 @@
 # NIQKI
-NIQKI stand for Next Index to Query _K_-mer Intersection.
+NIQKI stand for Next Index to Query K-mer Intersection.
 
 NIQKI is an sketch based software (similar to Mash or Dashing) which can index the largest sequence collections. 
 
@@ -7,26 +7,32 @@ Once the sketch index built, NIQKI can compare  query sequences to indexed seque
 
 Using inversed indexes and well designed fingerprint NIQKI can be order of magnitudes faster on large instances than concurent approaches with comparable precision and memory usage.
 
-Documentation
+## Documentation
 -------------
 
 Usage: `niqki [options]`
 
-1. Indexing  :
+### 1. Indexing  :
 
-`--index`, `-I <file>`             Input file of files to Index.
+NIQKI can handle FASTA, MultiLine FASTA  and FASTQ files gziped or not.
+
+`--index`, `-I <file>`             Input file of files to Index. 
+
+Such file of files should contain one file name or path per line. Each  file will be sketched and inserted in the index as a single entry.
 
 Example:
 
     niqki --index my_genomes.txt
     
-`--indexlines,`, `-i <file>`             Input fa/fq where each line is a separate entry to Index.
+`--indexlines,`, `-i <file>`             Input file where each line is a separate entry to Index.
+
+Each line of this file representing a DNA sequence will be sketched and inserted as a single entry.
 
 Example:
 
     niqki --indexlines my_genomes.fa
         
-2. Query  :
+### 2. Query  :
 
 `--query,`, `-Q <file>`             Input file of files to Query.
 
@@ -34,55 +40,96 @@ Example:
 
     niqki --query my_genomes.txt
 
-`--querylines,`, `-q <file>`             Input fa/fq where each line is a separate entry to Query.
+`--querylines,`, `-q <file>`             Input file where each line is a separate entry to Query.
 
 Example:
 
     niqki --indexlines my_genomes.fa
 
-3. Change sketch parameters
+### 3. Change sketch parameters
 
-`--kmer`, `-K <int>`         Kmer size (31).
+`--kmer`, `-K <int>`         Kmer size (Default value is 31).
+
+Each sequence will be splited into words of length K before to be hashed and potentially inserted to the sequence's sketch.
     
-`--sketch,`, `-S <int>`        Set sketch size to 2^S (15).
+`--sketch,`, `-S <int>`        Set sketch size to 2^S (Default value is 15 meaning 32,768 fingerprints per sketch).
 
+Each sequence will be summarized by a sketch of 2^S fingerprints. Larger sketches improve the estimation accurary but raise linearly the running time and the used memory. Incrementing S may therefore double running time and memory usage. In practice you can expect each sketch to allocate 2^S times 4 Bytes (meaning 16 kilobytes with default value).
 
+### 4. Change sketch advanced parameters
 
-4. Change sketch advanced parameters
+`--word`, `-W <int>`                  Fingerprint size (Default value is  12). 
 
-`--word`, `-W <int>`                  Fingerprint size (12). Modify with caution, larger fingerprints enable queries with less false positive but increase
-                                    EXPONENTIALY the overhead as the index count S*2^W cells. 
+Modify with caution, larger fingerprints decrease the  false positive  hits rate but increase EXPONENTIALY the overhead as the index intialization allocates S*2^W vectors. 
     
 `--Genomes_sizes`, `-G <int>`         Rought expectation of the genome sizes.
 
-`--HHL`, `-H <int>`                   Size of the hyperloglog section (4).  Modify with caution and prefer to use -G.
+Using the expected genome size will allow the index to choose the best Hyperloglog fingerprint size (provinding the lowest false positive rate) by estimating the subsampling rate.
 
-5. Change output
+`--HHL`, `-H <int>`                   Size of the hyperloglog fingerprint (4).  Modify with caution and prefer to use -G.
 
-`--output`, `-O <filename>`           Output file (niqkiOutput.gz)
+### 5. Change output
 
-`--minjac`, `-J <int> `               Minimal jaccard Index to report (0.1).
+`--output`, `-O <filename>`           Output file (Default value is niqkiOutput.gz).
+
+In wich file the hits should be reported.
+
+`--minjac`, `-J <float> `               Minimal jaccard Index to report (Default value is 0.1).
+
+Only the hits with a estimated Jaccard Index above the threshold will be wrote in the output.
                                     
-`--pretty`, `-P`                       Print a human-readable outfile. By default the outfile is in binary.
-        
-6. Other usage:
+`--pretty`, `-P`                       Print a human-readable outfile.
 
-`--dumpv`, `-D <filename>`             Dump the current index to the given file.
+Using this option the output look like this
+```
+Query_genome1.fa
+Indexed_genome5.fa 31654
+Indexed_genome7.fa 20543
+Indexed_genome3.fa 10654
+Query_genome2.fa
+Indexed_genome5.fa 17654
+Indexed_genome7.fa 2543
+```
+
+Otherwise the output will be displayed in binary following the pattern
+```
+Query_genome1.fa[ENDL][FOUR BYTES indicating the number of hit to parse]
+(Foreach hit)
+[FOUR BYTES indicating the indexed genome identifier][FOUR BYTES indicating the number of hits found]
+Query_genome2.fa[ENDL]...
+```
+### 6. Other usage:
+
+`--dump`, `-D <filename>`             Dump the current index to the given file.
   
 `--load`, `-L <filename>`             Load an index to the given file.
 
 
-`--indexdownload`, `-Iddl <filename>` Get a list of NCBI accesion to download and to put it in the index (experimental). This this post to get such a list  https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/#allcomplete
+`--indexdownload`, `-Iddl <filename>` Get a list of NCBI accesion to download and to put it in the index (experimental). 
+This this post to get such a list  https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/#allcomplete
  
-`--matrix`  , `-M <filename>`            Index the inout file of file, query the index against itself and output the corresponging matrix distance
-
+`--matrix`  , `-M <filename>`            Index the input file of file, query the index against itself and output the corresponging matrix distance.
+The matrix distance will look like this
+```
+##Names	ecoli01p.fa.gz	ecoli03p.fa.gz	ecoli07p.fa.gz	ecoli04p.fa.gz	ecoli05p.fa.gz	ecoli02p.fa.gz	ecoli06p.fa.gz	ecoli08p.fa.gz	ecoli09p.fa.gz	ecoli10p.fa.gz	
+ecoli01p.fa.gz	1	0.938019	0.836639	0.910797	0.884796	0.967773	0.861206	0.814117	0.791321	0.769226	
+ecoli03p.fa.gz	0.938019	1	0.888824	0.970367	0.941711	0.968567	0.915741	0.864014	0.8396	0.815033	
+ecoli07p.fa.gz	0.836639	0.888824	1	0.914246	0.941223	0.862457	0.969086	0.970581	0.942017	0.91275	
+ecoli04p.fa.gz	0.910797	0.970367	0.914246	1	0.970093	0.940094	0.942688	0.888702	0.863403	0.838287	
+ecoli05p.fa.gz	0.884796	0.941711	0.941223	0.970093	1	0.913025	0.971161	0.914337	0.888031	0.861877	
+ecoli02p.fa.gz	0.967773	0.968567	0.862457	0.940094	0.913025	1	0.888062	0.838806	0.815247	0.791534	
+ecoli06p.fa.gz	0.861206	0.915741	0.969086	0.942688	0.971161	0.888062	1	0.94104	0.913818	0.886292	
+ecoli08p.fa.gz	0.814117	0.864014	0.970581	0.888702	0.914337	0.838806	0.94104	1	0.970001	0.939148	
+ecoli09p.fa.gz	0.791321	0.8396	0.942017	0.863403	0.888031	0.815247	0.913818	0.970001	1	0.968262	
+ecoli10p.fa.gz	0.769226	0.815033	0.91275	0.838287	0.861877	0.791534	0.886292	0.939148	0.968262	1
+```
 
 `--logo`                           Print ASCII art logo, then exit.
 
 `--help`, `-h`                    Print usage and exit.
 
 
-Installation
+## Installation
 ------------
 
 ### Requirements
@@ -131,15 +178,14 @@ To remove `NIQKI`from your system use the following command:
 cd NIQKI && make uninstall
 ```
 
-
-Auteurs/Authors:
+Authors:
 ----------------
 
 * Clément AGRET     <clement.agret@lirmm.fr>
 * Bastien CAZAUX    <bastien.cazaux@univ-lille.fr>
 * Antoine LIMASSET  <antoine.limasset@univ-lille.fr>
 
-Programmeurs/Programmers:
+Programmers:
 -------------------------
 
 * Clément AGRET     <clement.agret@lirmm.fr>
