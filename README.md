@@ -1,15 +1,20 @@
 # NIQKI
 NIQKI stand for Next Index to Query K-mer Intersection.
 
-NIQKI is an sketch based software (similar to Mash or Dashing) which can index the largest sequence collections. 
+NIQKI is an sketch based software, similar to [Mash](https://github.com/marbl/Mash) or [Dashing](https://github.com/dnbaker/dashing), which can index the largest sequence collections. 
 
 Once the sketch index built, NIQKI can compare  query sequences to indexed sequences and output matches above given threshold.
 
 Using inversed indexes and well designed fingerprint NIQKI can be order of magnitudes faster on large instances than concurent approaches with comparable precision and memory usage.
 
-## Command line options
--------------
 
+# Table of contents
+1. [Command line options](#cmo)
+2. [Installation](#install)
+3. [Sample usages](#su)
+4. [Credits](#cr)
+
+## Command line options <a name="cmo"></a>
 
 ### 1. Indexing  :
 
@@ -128,8 +133,7 @@ ecoli10p.fa.gz	0.769226	0.815033	0.91275	0.838287	0.861877	0.791534	0.886292	0.9
 `--help`, `-h`                    Print usage and exit.
 
 
-## Installation
-------------
+## Installation <a name="install"></a>
 
 ### Requirements
 
@@ -170,7 +174,7 @@ cd NIQKI && make uninstall
 ```
 
 
-## Sample Usage
+## Sample Usages <a name="su"></a>
 
 To test your installation you can go to the resources folder
 ```sh
@@ -219,6 +223,10 @@ Or only hits with 95% shared fingerprints with -J 0.95
 niqki -I file_of_file.txt -Q file_of_file.txt -O hits95.gz -P -S 10 -G 5000000 -J 0.95
 zcat hits95.gz
 ```
+
+## Credits <a name="cr"></a>
+
+For further information our preprint can be consulted in [Biorxiv](https://www.biorxiv.org/content/10.1101/2021.11.04.467355v1)
 
 
 
