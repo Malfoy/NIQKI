@@ -226,7 +226,8 @@ zcat hits95.gz
 
 ## Credits <a name="cr"></a>
 
-For further information our preprint can be consulted in [Biorxiv](https://www.biorxiv.org/content/10.1101/2021.11.04.467355v1)
+For further information our preprint "Toward optimal fingerprint indexing for large scale genomics"
+ can be consulted in [Biorxiv](https://www.biorxiv.org/content/10.1101/2021.11.04.467355v1)
 
 
 
