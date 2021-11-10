@@ -7,10 +7,9 @@ Once the sketch index built, NIQKI can compare  query sequences to indexed seque
 
 Using inversed indexes and well designed fingerprint NIQKI can be order of magnitudes faster on large instances than concurent approaches with comparable precision and memory usage.
 
-## Documentation
+## Command line options
 -------------
 
-Usage: `niqki [options]`
 
 ### 1. Indexing  :
 
@@ -149,24 +148,16 @@ following commands:
 
 #### NIQKI
 
-First, clone the `NIQKI` repository:
 ```sh
-git clone https://github.com/Malfoy/NIQKI.git
-```
+git clone https://github.com/Malfoy/NIQKI.git ;
 
-Once cloned, go to the newly created directory and artificially
-restore the relative order of creation/modification dates for some
-files (see explanation in previous section).
+cd NIQKI ;
 
-```sh
-cd NIQKI
-```
+./configure --prefix=$HOME/local_install ;
 
-Now, run the `configure` script, build and install.
-```sh
-./configure --prefix=$HOME/local_install
-make
-make install
+make ;
+
+make install ;
 ```
 
 
@@ -177,6 +168,59 @@ To remove `NIQKI`from your system use the following command:
 ```sh
 cd NIQKI && make uninstall
 ```
+
+
+## Sample Usage
+
+To test your installation you can go to the resources folder
+```sh
+cd resources
+```
+
+
+You can generate a distance matrix from the provided file of files.
+
+```sh
+niqki -M file_of_file.txt -O matrix.gz
+```
+
+And see it with zcat (or gzip -d)
+
+```sh
+zcat matrix.gz 
+```
+By default Niqki generate a hit list for each query file
+ 
+ ```sh
+niqki -I file_of_file.txt -Q file_of_file.txt -O hits.gz -P
+zcat hits.gz
+```
+
+You can change the sketch size depending of our usage (here 1,024 fingerprint per sketch)
+ ```sh
+niqki -I file_of_file.txt -Q file_of_file.txt -O hitsS10.gz -P -S 10
+zcat hitsS10.gz
+```
+
+If you have an idea of your mean genomes size you should indicate it to improve the false positive rate
+ ```sh
+niqki -I file_of_file.txt -Q file_of_file.txt -O hits.gz -P -S 10 -G 5000000
+zcat hits.gz
+```
+
+You can also tweak the minimal fraction of shared fingerprint necesary to output hits.
+You can report all hits with -J 0
+ ```sh
+niqki -I file_of_file.txt -Q file_of_file.txt -O allhits.gz -P -S 10 -G 5000000 -J 0
+zcat allhits.gz
+```
+Or only hits with 95% shared fingerprints with -J 0.95
+ ```sh
+niqki -I file_of_file.txt -Q file_of_file.txt -O hits95.gz -P -S 10 -G 5000000 -J 0.95
+zcat hits95.gz
+```
+
+
 
 Authors:
 ----------------
