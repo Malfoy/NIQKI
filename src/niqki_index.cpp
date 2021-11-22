@@ -6,9 +6,6 @@
 
 
 using namespace std;
-/*
- * using namespace SIMDCompressionLib;
-*/
 const int bufferSize = 10000;
 
 
@@ -40,33 +37,21 @@ Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const 
   }
 }
 
-/*
-void Index::compress_index(){
-    for(uint i(0);i<fingerprint_range*F;++i){
-        if(not Buckets[i].empty()){
-        vector<uint32_t> compressed_output(Buckets[i].size() + 1024);
-        size_t compressedsize = compressed_output.size();
-        codec.encodeArray(Buckets[i].data(), Buckets[i].size(), compressed_output.data(),compressedsize);
-        compressed_output.resize(compressedsize);
-        compressed_output.shrink_to_fit();
-        Buckets[i]=compressed_output;
-        }
-    }
-}
-*/
-//TODO UPDATE
+
+
 void Index::dump_index_disk(const string& filestr)const{
-  zstr::ofstream out(filestr);
+  zstr::ofstream out(filestr,ios::binary);
 	// VARIOUS INTEGERS
 	out.write(reinterpret_cast<const char*>(&lF), sizeof(lF));
   out.write(reinterpret_cast<const char*>(&K), sizeof(K));
   out.write(reinterpret_cast<const char*>(&H), sizeof(H));
   out.write(reinterpret_cast<const char*>(&W), sizeof(W));
+  out.write(reinterpret_cast<const char*>(&min_score), sizeof(min_score));
   out.write(reinterpret_cast<const char*>(&genome_numbers), sizeof(genome_numbers));
   for(uint i(0);i<fingerprint_range*F;++i){
     uint32_t size(Buckets[i].size());
     out.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    out.write(reinterpret_cast<const char*>(&Buckets[i]), size*sizeof(gid));
+    out.write(reinterpret_cast<const char*>(&(Buckets[i][0])), size*sizeof(gid));
   }
   for(uint i(0);i<filenames.size();++i){
     out.write((filenames[i]+'\n').c_str(),filenames[i].size()+1);
@@ -75,13 +60,15 @@ void Index::dump_index_disk(const string& filestr)const{
 
 
 
-//TODO UPDATE
-Index::Index(const string& filestr) {
-  zstr::ifstream in(filestr);
+Index::Index(const string& filestr,bool ipretty_printing, const string ifilename) {
+  pretty_printing=ipretty_printing;
+  filename=ifilename;
+  zstr::ifstream in(filestr,ios::binary);
   in.read(reinterpret_cast< char*>(&lF), sizeof(lF));
   in.read(reinterpret_cast< char*>(&K), sizeof(K));
   in.read(reinterpret_cast< char*>(&H), sizeof(H));
   in.read(reinterpret_cast< char*>(&W), sizeof(W));
+  in.read(reinterpret_cast< char*>(&min_score), sizeof(min_score));
   in.read(reinterpret_cast< char*>(&genome_numbers), sizeof(genome_numbers));
   F=1<<lF;
   M=W-H;
@@ -98,9 +85,19 @@ Index::Index(const string& filestr) {
     uint32_t size;
     in.read(reinterpret_cast< char*>(&size), sizeof(size));
     if(size!=0){
-      Buckets[i].resize(size);
-      in.read(reinterpret_cast< char*>(&Buckets[i]), size*sizeof(gid));
+      Buckets[i].resize(size,0);
+      in.read(reinterpret_cast< char*>(&(Buckets[i][0])), size*sizeof(gid));
     }
+  }
+  string genome_name;
+  for(uint i(0);i<genome_numbers;++i){
+    getline(in,genome_name);
+    filenames.push_back(genome_name);
+  }
+  if(pretty_printing){
+      outfile=new zstr::ofstream(filename);
+  }else{
+      outfile=new zstr::ofstream(filename,ios::binary);
   }
 }
 
@@ -110,6 +107,7 @@ Index::~Index() {
   delete[] Buckets;
   outfile->close();
 }
+
 
 
 //UTILS
@@ -141,9 +139,6 @@ void Index::select_best_H(const double genome_size){
 
 
 
-
-
-
 double Index::score_H(const double x,const int try_h){
   double epsilon = 0.02;
   double try_m=W-try_h;
@@ -167,6 +162,7 @@ double Index::score_H(const double x,const int try_h){
   }
   return kb-ka;
 }
+
 
 
 string Index::kmer2str(uint64_t num)const {
@@ -198,6 +194,7 @@ string Index::kmer2str(uint64_t num)const {
 }
 
 
+
 //UTILS
 uint64_t Index::asm_log2(const uint64_t x) const {
   uint64_t y;
@@ -207,6 +204,7 @@ uint64_t Index::asm_log2(const uint64_t x) const {
       );
   return y;
 }
+
 
 
 //UTILS
@@ -277,23 +275,14 @@ kmer Index::str2numstrand(const string& str)const {
 
 
 int32_t Index::get_fingerprint(uint64_t hashed)const {
-	//~ print_bin(hashed);
   int32_t result;
   result = hashed&mask_M;//we keep the last bits for the minhash part
   uint32_t ll=asm_log2(hashed);//we compute the log of the hash
-   //~ cout<<ll<<endl;
   uint32_t size_zero_trail(64-ll-1);
-  //~ cout<<size_zero_trail<<endl;
   int remaining_nonzero=maximal_remainder-size_zero_trail;
-  //~ cout<<remaining_nonzero<<endl;
   remaining_nonzero=max(0,remaining_nonzero);
-  
-   //~ cout<<remaining_nonzero<<endl;
-   //~ cin.get();
   // if the log is too high can cannont store it on H bit here we sature
   result+=remaining_nonzero<<M;// we concatenant the hyperloglog part with the minhash part
-  //~ print_bin(result,W);
-  //~ cin.get();
   return result;
 }
 
@@ -330,8 +319,6 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
     uint64_t hashed=revhash64(canon);
     uint64_t bucket_id(unrevhash64(canon)>>(64-lF));//Which Bucket 
     int32_t fp=get_fingerprint(hashed);
-    //MAXHASH
-	//~ if(sketch[bucket_id] < fp or sketch[bucket_id]<0) {
 	//MINHASH
     if(sketch[bucket_id] > fp or sketch[bucket_id]==-1) {
       sketch[bucket_id]=fp;
@@ -496,14 +483,9 @@ void Index::query_file_whole(const string& filestr) {
     }
 
   }   
-
   auto out(query_sketch(sketch));
   output_query(out,filestr);
 }
-
-
-
-// atomic<uint64_t> sum41(0),denom(1);
 
 
 
@@ -524,7 +506,6 @@ void Index::query_file_of_file_whole(const string& filestr) {
     ref.clear();
   }
 }
-// cout<<(double)sum41/(denom*F)<<endl;
 }
 
 
@@ -536,10 +517,6 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
       *outfile<<queryname<<"\n";
       for(uint i(0);i<toprint.size();++i){
         *outfile<<filenames[toprint[i].second]<<" "<<toprint[i].first<<'\n';
-        // if(queryname!=filenames[toprint[i].second]){
-			  //  sum41+=toprint[i].first;
-			  //   denom++;
-		    // }
       }
     }
   }else{
@@ -557,11 +534,11 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
 }
 
 
+
 void Index::query_range(uint32_t begin,uint32_t end)const {
 	uint size_batch(end-begin);
 	uint16_t *counts=new uint16_t[size_batch*genome_numbers];
 	memset(counts, 0, size_batch*genome_numbers*sizeof(*counts));
-	
 	
 	//FOREACH BUCKET
 	#pragma omp parallel
@@ -615,7 +592,6 @@ void Index::query_matrix()const {
 		}else{
 			query_range(i,i+bufferSize);
 		}
-		
 	}
 }
 
@@ -625,8 +601,9 @@ void Index::query_matrix()const {
 query_output Index::query_sketch(const vector<int32_t>& sketch)const {
     query_output result;
      if(lF<=7){
+       cout<<genome_numbers<<endl;
         uint8_t *counts=new uint8_t[genome_numbers];
-		memset(counts, 0, genome_numbers*sizeof(*counts));
+		    memset(counts, 0, genome_numbers*sizeof(uint8_t));
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -642,7 +619,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
         delete []counts;
       }else if(lF<=15){
         uint16_t *counts=new uint16_t[genome_numbers];
-		memset(counts, 0, genome_numbers*sizeof(*counts));
+		    memset(counts, 0, genome_numbers*sizeof(uint16_t));
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -658,7 +635,7 @@ query_output Index::query_sketch(const vector<int32_t>& sketch)const {
         delete []counts;
     }else{
         uint32_t *counts=new uint32_t[genome_numbers];
-		memset(counts, 0, genome_numbers*sizeof(*counts));
+		memset(counts, 0, genome_numbers*sizeof(uint32_t));
         for(uint i(0);i<F;++i){
             if(sketch[i]<(int32_t)fingerprint_range and sketch[i]>=0){
                 for(uint j(0);j<Buckets[sketch[i]+i*fingerprint_range].size();++j){
@@ -686,10 +663,11 @@ query_output Index::query_sequence(const string& str)const {
     return query_sketch(sketch);
 }
 
+
+
 /*******************************************************************************************/
 /******************************* Code Duplication for matrix *******************************/
 /*******************************************************************************************/
-
 void Index::query_file_whole_matrix(const string& filestr) {
   char type=get_data_type(filestr);
   zstr::ifstream in(filestr);

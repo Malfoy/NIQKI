@@ -228,6 +228,7 @@ static void restoreDir() {
 
 int main(int argc, char * argv[]){
   int F=0,K=0,W=0,H=0;
+  bool pretty_printing=false;
   double min_fract;
   string list_file = "";
   string query_file = "";
@@ -288,13 +289,21 @@ int main(int argc, char * argv[]){
   cout << "+-------------------------------------------------------------------+" << endl;
   cout << "|                            Informations                           |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
-  Index monindex(F,K,W,H,out_file,min_fract);
-   if(genomes_sizes!=0){
-    monindex.select_best_H(genomes_sizes);
-  }
-  if (options[PRETTY]){
-    monindex.pretty_printing=true;
+  Index* monindex;
+   if (options[PRETTY]){
+    pretty_printing=true;
   } 
+  if(options[LOAD]){
+    string indexfile = options[LOAD].last()->arg;  
+    monindex = new Index(indexfile,pretty_printing,out_file);
+  }else{
+    monindex=new Index(F,K,W,H,out_file,min_fract);
+    monindex->pretty_printing=pretty_printing;
+  }
+   if(genomes_sizes!=0){
+    monindex->select_best_H(genomes_sizes);
+  }
+ 
   time_point<system_clock> start, endindex,end;
   start = std::chrono::system_clock::now();
 
@@ -310,7 +319,7 @@ int main(int argc, char * argv[]){
     }
     changeDirFromFilename(list_file.c_str());
     DEBUG_MSG("Opening file : '"<<list_file<<"'");
-    monindex.insert_file_of_file_whole(list_file.substr(list_file.find_last_of("/\\") + 1));
+    monindex->insert_file_of_file_whole(list_file.substr(list_file.find_last_of("/\\") + 1));
     DEBUG_MSG("File added");
     restoreDir();
 
@@ -325,7 +334,7 @@ int main(int argc, char * argv[]){
     }
     changeDirFromFilename(list_file.c_str());
     DEBUG_MSG("Opening file : '"<<list_file<<"'");
-    monindex.insert_file_lines(list_file.substr(list_file.find_last_of("/\\") + 1));
+    monindex->insert_file_lines(list_file.substr(list_file.find_last_of("/\\") + 1));
     DEBUG_MSG("File added");
     restoreDir();
   }
@@ -340,15 +349,21 @@ int main(int argc, char * argv[]){
     }
     changeDirFromFilename(list_file.c_str());
     DEBUG_MSG("Opening file : '"<<list_file<<"'");
-    monindex.Download_NCBI_fof(list_file.substr(list_file.find_last_of("/\\") + 1));
+    monindex->Download_NCBI_fof(list_file.substr(list_file.find_last_of("/\\") + 1));
     DEBUG_MSG("File added");
     restoreDir();
+  }
+
+  if(options[DUMP]){
+    string indexfile = options[DUMP].last()->arg;  
+    monindex->dump_index_disk(indexfile);
   }
 
 
   endindex = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = endindex - start;
   cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
+
 
   /*****************************************/
   /* Add the query file and do the request */
@@ -362,7 +377,7 @@ int main(int argc, char * argv[]){
       cout << "Unable to open the file '" << query_file << "'" << endl;
     }
     DEBUG_MSG("Opening file...");
-    monindex.query_file_of_file_whole(query_file);
+    monindex->query_file_of_file_whole(query_file);
     DEBUG_MSG("Query done.");
   }
 
@@ -373,9 +388,10 @@ int main(int argc, char * argv[]){
       cout << "Unable to open the file '" << query_file << "'" << endl;
     }
     DEBUG_MSG("Opening file...");
-    monindex.query_file_lines(query_file);
+    monindex->query_file_lines(query_file);
     DEBUG_MSG("Query done.");
   }
+  monindex->outfile->close();
 
 
   end = std::chrono::system_clock::now();
@@ -394,7 +410,7 @@ int main(int argc, char * argv[]){
 	  start= std::chrono::system_clock::now();
       changeDirFromFilename(matrix_file.c_str());
       DEBUG_MSG("Creating the index from: '"<<matrix_file.substr(matrix_file.find_last_of("/\\") + 1)<<"'");
-      monindex.insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
+      monindex->insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
       DEBUG_MSG("File added");
       restoreDir();
       DEBUG_MSG("Directory restored");
@@ -404,7 +420,7 @@ int main(int argc, char * argv[]){
     }
     changeDirFromFilename(matrix_file.c_str());
     start= std::chrono::system_clock::now();
-    monindex.query_matrix();
+    monindex->query_matrix();
     end= std::chrono::system_clock::now();
     elapsed_seconds = end - start;
 	cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
@@ -432,10 +448,10 @@ int main(int argc, char * argv[]){
   cout << "+-----------------------------------+-------------------------------+" << endl;
   cout << "| k-mer size                        |" << setw(30) << setfill(' ') << K << " |" << endl
        << "| S                                 |" << setw(30) << setfill(' ') << F << " |" << endl
-       << "| Number of fingerprints            |" << setw(30) << setfill(' ') << monindex.F<< " |" << endl
+       << "| Number of fingerprints            |" << setw(30) << setfill(' ') << monindex->F<< " |" << endl
        << "| W                                 |" << setw(30) << setfill(' ') << W << " |" << endl
        << "| H                                 |" << setw(30) << setfill(' ') << H << " |" << endl
-       << "| Number of indexed genomes         |" << setw(30) << setfill(' ') << monindex.getNbGenomes() << " |" << endl;
+       << "| Number of indexed genomes         |" << setw(30) << setfill(' ') << monindex->getNbGenomes() << " |" << endl;
   cout << "+-----------------------------------+-------------------------------+" << endl;
 
   return EXIT_SUCCESS;

@@ -64,7 +64,7 @@ class Index {
      * \brief Default constructor.
      */
     Index(uint32_t F, uint32_t K, uint32_t W, uint32_t H, string filename, double min_fract);
-    Index(const string& filestr);
+    Index(const string& filestr,bool ipretty_printing, const string ifilename);
 
 
     /**
