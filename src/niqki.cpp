@@ -228,7 +228,7 @@ static void restoreDir() {
 
 int main(int argc, char * argv[]){
   int F=0,K=0,W=0,H=0;
-  bool pretty_printing=false;
+  bool pretty_printing=true;
   double min_fract;
   string list_file = "";
   string query_file = "";
@@ -265,7 +265,7 @@ int main(int argc, char * argv[]){
   DEBUG_MSG("H = " << H);
   W = options[WORD] ? atoi(options[WORD].last()->arg) : 12;
   DEBUG_MSG("W = " << W);
-  min_fract = options[MIN] ? atof(options[MIN].last()->arg) : 0.1;
+  min_fract = options[MIN] ? atof(options[MIN].last()->arg) : 0;
   DEBUG_MSG("min_fract = " << min_fract);
   uint genomes_sizes = options[GENOME_SIZE] ? atoi(options[GENOME_SIZE].last()->arg) : 0;
 

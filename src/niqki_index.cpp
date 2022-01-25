@@ -10,9 +10,9 @@ const int bufferSize = 10000;
 
 
 
-Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const string ifilename="niqkiOutput.gz", double min_fract=0.1) {
+Index::Index(uint32_t ilF=10, uint32_t iK=31,uint32_t iW=8,uint32_t iH=4, const string ifilename="niqkiOutput.gz", double min_fract=0) {
   filename=ifilename;
-  pretty_printing=false;
+  pretty_printing=true;
   lF=ilF;
   K=iK;
   W=iW;
@@ -516,7 +516,7 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
     {
       *outfile<<queryname<<"\n";
       for(uint i(0);i<toprint.size();++i){
-        *outfile<<filenames[toprint[i].second]<<" "<<toprint[i].first<<'\n';
+        *outfile<<filenames[toprint[i].second]<<" "<<(double)toprint[i].first/F<<'\n';
       }
     }
   }else{
