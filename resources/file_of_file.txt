@@ -7,4 +7,3 @@ ecoli06p.fa.gz
 ecoli07p.fa.gz
 ecoli08p.fa.gz
 ecoli09p.fa.gz
-ecoli10p.fa.gz

@@ -387,12 +387,12 @@ void Index::query_file_lines(const string& filestr)const {
     while(not in.eof()) {
       #pragma omp critical (input)
       {
-        Biogetline(&in,ref,type);
+        Biogetline(&in,ref,type,head);
       }
       if(ref.size()>K) {
         auto out(query_sequence(ref));
         ref.clear();
-        output_query(out,filestr);
+        output_query(out,head);
       }
     }
    }
@@ -514,10 +514,11 @@ void Index::output_query(const query_output& toprint,const string& queryname)con
   if(pretty_printing){
     #pragma omp critical (outputfile)
     {
-      *outfile<<queryname<<"\n";
+      *outfile<<queryname<<" ";
       for(uint i(0);i<toprint.size();++i){
-        *outfile<<filenames[toprint[i].second]<<" "<<(double)toprint[i].first/F<<'\n';
+        *outfile<<filenames[toprint[i].second]<<":"<<(double)toprint[i].first/F<<' ';
       }
+      *outfile<<endl;
     }
   }else{
     #pragma omp critical (outputfile)
