@@ -602,7 +602,6 @@ void Index::query_matrix()const {
 query_output Index::query_sketch(const vector<int32_t>& sketch)const {
     query_output result;
      if(lF<=7){
-       cout<<genome_numbers<<endl;
         uint8_t *counts=new uint8_t[genome_numbers];
 		    memset(counts, 0, genome_numbers*sizeof(uint8_t));
         for(uint i(0);i<F;++i){
