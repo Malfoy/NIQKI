@@ -95,6 +95,10 @@ class Index {
     int32_t get_fingerprint(uint64_t hashed)const;
 
     uint64_t revhash64 ( uint64_t x ) const;
+    
+    uint64_t unrevhash64 ( uint64_t x ) const;
+    
+    uint64_t hash_family(const uint64_t x, const uint factor)const;
 
     void compute_sketch(const string& reference, vector<int32_t>& sketch) const;
 
@@ -204,7 +208,7 @@ class Index {
     void select_best_H(const double genome_size);
 
     double score_H(const double x,const int try_h);
-
+    void sketch_densification(vector<int32_t>& sketch, uint empty_cell) const;
 
 };
 

@@ -297,11 +297,37 @@ uint64_t Index::revhash64 ( uint64_t x ) const {
 
 
 
-uint64_t unrevhash64(uint64_t x) {
+uint64_t Index::unrevhash64(uint64_t x) const{
   x = ((x >> 32) ^ x) * 0xCFEE444D8B59A89B;
   x = ((x >> 32) ^ x) * 0xCFEE444D8B59A89B;
   x = ((x >> 32) ^ x);
   return x;
+}
+
+
+uint64_t Index::hash_family(const uint64_t x, const uint factor)const{
+    return unrevhash64(x)+factor*revhash64(x);
+}
+
+
+void Index::sketch_densification(vector<int32_t>& sketch, uint empty_cell) const {
+    uint step(0);
+    uint size(sketch.size());
+    while(empty_cell!=0){
+        for(uint i(0);i<size;i++){
+            if(sketch[i]!=-1){
+                uint64_t hash=hash_family(sketch[i],step)%size;
+                if(sketch[hash]==-1){
+                    sketch[hash]=sketch[i];
+                    empty_cell--;
+                    if(empty_cell==0){
+                        return;
+                    }
+                }
+            }
+        }
+        step++;
+    }
 }
 
 
@@ -310,6 +336,7 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
   if(sketch.size()!=F) {
     sketch.resize(F,-1);
   }
+  uint empty_cell(F);
   kmer S_kmer(Index::str2numstrand(reference.substr(0,K-1)));//get the first kmer (k-1 bases)
   kmer RC_kmer(Index::rcb(S_kmer));//The reverse complement
   for(uint i(0);i+K<reference.size();++i) {// all kmer in the genome
@@ -320,10 +347,14 @@ void Index::compute_sketch(const string& reference, vector<int32_t>& sketch) con
     uint64_t bucket_id(unrevhash64(canon)>>(64-lF));//Which Bucket 
     int32_t fp=get_fingerprint(hashed);
 	//MINHASH
-    if(sketch[bucket_id] > fp or sketch[bucket_id]==-1) {
+    if(sketch[bucket_id]==-1){
+        empty_cell--;
+        sketch[bucket_id]=fp;
+    }else if(sketch[bucket_id] > fp) {
       sketch[bucket_id]=fp;
     }
   }
+  sketch_densification(sketch,empty_cell);
 }
 
 
