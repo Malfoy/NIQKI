@@ -364,7 +364,32 @@ int main(int argc, char * argv[]){
   std::chrono::duration<double> elapsed_seconds = endindex - start;
   cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
 
-
+ if (options[MATRIX]) {
+    string matrix_file = options[MATRIX].last()->arg;
+    ifstream ifs(matrix_file);
+    if (!ifs) {
+      cout << "Unable to open the file '" << matrix_file << "'" << endl;
+    }
+    if (!options[LIST] and !options[LISTLINES]) {
+	  start= std::chrono::system_clock::now();
+      changeDirFromFilename(matrix_file.c_str());
+      DEBUG_MSG("Creating the index from: '"<<matrix_file.substr(matrix_file.find_last_of("/\\") + 1)<<"'");
+      monindex->insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
+      DEBUG_MSG("File added");
+      restoreDir();
+      DEBUG_MSG("Directory restored");
+      endindex = std::chrono::system_clock::now();
+	  std::chrono::duration<double> elapsed_seconds = endindex - start;
+	  cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
+    }
+    changeDirFromFilename(matrix_file.c_str());
+    start= std::chrono::system_clock::now();
+    monindex->query_matrix();
+    end= std::chrono::system_clock::now();
+    elapsed_seconds = end - start;
+	cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
+    restoreDir();
+  }
   /*****************************************/
   /* Add the query file and do the request */
   /*****************************************/
@@ -399,33 +424,6 @@ int main(int argc, char * argv[]){
   cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
   elapsed_seconds = end - start;
   cout << "| Whole run lasted (s)              |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
-
-    if (options[MATRIX]) {
-    string matrix_file = options[MATRIX].last()->arg;
-    ifstream ifs(matrix_file);
-    if (!ifs) {
-      cout << "Unable to open the file '" << matrix_file << "'" << endl;
-    }
-    if (!options[LIST] and !options[LISTLINES]) {
-	  start= std::chrono::system_clock::now();
-      changeDirFromFilename(matrix_file.c_str());
-      DEBUG_MSG("Creating the index from: '"<<matrix_file.substr(matrix_file.find_last_of("/\\") + 1)<<"'");
-      monindex->insert_file_of_file_whole(matrix_file.substr(matrix_file.find_last_of("/\\") + 1));
-      DEBUG_MSG("File added");
-      restoreDir();
-      DEBUG_MSG("Directory restored");
-      endindex = std::chrono::system_clock::now();
-	  std::chrono::duration<double> elapsed_seconds = endindex - start;
-	  cout << "| Indexing lasted (s)               |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
-    }
-    changeDirFromFilename(matrix_file.c_str());
-    start= std::chrono::system_clock::now();
-    monindex->query_matrix();
-    end= std::chrono::system_clock::now();
-    elapsed_seconds = end - start;
-	cout << "| Query lasted (s)                  |" << setw(30) << setfill(' ') << elapsed_seconds.count() << " |" << endl;
-    restoreDir();
-  }
 
 
   /**********************************************/
